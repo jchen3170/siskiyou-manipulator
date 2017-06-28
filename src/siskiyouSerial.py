@@ -19,12 +19,12 @@ class SiskiyouSerial():
             self.ser.open()
         print (self.ser)
 
-    # check to make sure port is functional
-    def init(self):
-        print ("Initializing...")
-        self.write("2 st")
-        self.read()
-        print ("\tComplete")
+    # # check to make sure port is functional
+    # def init(self):
+    #     print ("Initializing...")
+    #     self.write("2 st")
+    #     self.read()
+    #     print ("\tComplete")
 
     # read from port
     def read(self, bits=None):

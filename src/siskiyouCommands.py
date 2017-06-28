@@ -6,6 +6,7 @@ Command library to control and communicate with the manipulator
 import siskiyouSerial
 import time
 import siskiyouLibrary as sisk
+import siskiyouControls as controls
 
 # Sets home for selected axis for manipulator.
 # inputs: 
@@ -19,6 +20,13 @@ def setHome(axis, ser, val=None):
     else:
         st = axis + sisk.HOME + ' ' + str(val)
     return ser.write(st)
+
+def setTrajectoryPercent(axis, ser, val=None):
+    if val is None:
+        st = axis + sisk.TRAJECTORY + " 100"
+    else:
+        st = axis + sisk.TRAJECTORY + ' ' + str(val)
+    ser.write(st)
 
 # returns selected axis to home
 # inputs: 
@@ -43,7 +51,7 @@ def returnHome(axis, ser, sp, ac):
 #     amt: amount to move
 #     sp: max velocity
 #     ac: acceleration rate
-def absPosition(axis, ser, amt, sp, ac):
+def moveAbsolute(axis, ser, amt, sp, ac):
     str1 = axis + sisk.ENABLE
     str2 = axis + sisk.ABS + ' ' + str(amt) 
     str3 = axis + sisk.MAX_VELOCITY + ' ' + str(sp)
@@ -60,7 +68,7 @@ def absPosition(axis, ser, amt, sp, ac):
 #     amt: amount to move
 #     sp: max velocity
 #     ac: acceleration rate
-def relPosition(axis, ser, amt, sp, ac):
+def moveRelative(axis, ser, amt, sp, ac):
     str1 = axis + sisk.ENABLE
     str2 = axis + sisk.REL + ' ' + str(amt)
     str3 = axis + sisk.MAX_VELOCITY + ' ' + str(sp)
@@ -101,6 +109,12 @@ def getStatus(axis, ser):
     if len(status) != 2:
         return ''
     return hex2bin(status[1])
+
+def init_controls(ser, P, I, D):
+    P = 8000 # must be between 4000 - 32000
+    I = 250 # must be between 1 - 32000
+    D = 1000 # must be between 1000 - 32000
+    controls.setGains(axis.ALL, P, I, D, ser)
 
 # convert hex string to binary
 def hex2bin(st):
