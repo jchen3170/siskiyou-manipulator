@@ -17,26 +17,34 @@ import siskiyouLibrary as sisk
 from siskiyou.msg import siskiyouPosition
 
 def init_controls(ser):
-    P = 4000 # must be between 4000 - 32000
-    I = 1 # must be between 1 - 32000
+    P = 8000 # must be between 4000 - 32000
+    I = 250 # must be between 1 - 32000
     D = 1000 # must be between 1000 - 32000
     controls.setGains(axis.ALL, P, I, D, ser)
 
 if __name__ == "__main__":
     port = "/dev/ttyUSB0"
+    accel = 100
+    vel = 1000
+    axis = sisk.Y
 
     ser = siskiyouSerial.SiskiyouSerial(port)
     ser.init()
 
-    print "status", command.getStatus(sisk.X, ser)
+    print "status:", command.getStatus(axis, ser)
 
-    print "Init pos:", command.getPosition(sisk.X, ser)
+    print "init pos:", command.getPosition(axis, ser)
 
-    # command.relPosition(sisk.X, 75000, 3000, 100, ser)
-    # command.returnHome(sisk.X, 3000, 100, ser)
+    command.setHome(axis, ser)
+    command.relPosition(axis, ser, 50000, vel, accel)
 
-    # time.sleep(0.5)
-    # print command.getPosition(sisk.X, ser)
+    time.sleep(3)
+    print "mid:", command.getPosition(axis, ser)
+    command.returnHome(axis, ser, vel, accel)
+
+    time.sleep(3)
+    print 'final pos:', command.getPosition(axis, ser)
+
 
     ser.close()
 

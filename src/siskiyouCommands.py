@@ -28,7 +28,7 @@ def setHome(axis, ser, val=None):
 #     sp: max velocity
 #     ac: acceleration rate
 #     ser: python serial object
-def returnHome(axis, sp, ac, ser):
+def returnHome(axis, ser, sp, ac):
     str1 = axis + sisk.ENABLE # enable drive
     str2 = axis + sisk.ABS + " 00000" # load absolute target position
     str3 = axis + sisk.MAX_VELOCITY + ' ' + str(sp) # load max commanded velocity
@@ -36,13 +36,9 @@ def returnHome(axis, sp, ac, ser):
     str5 = axis + sisk.MOVE
     s_list = [str1, str2, str3, str4, str5]
     # write commands to device
-    for s in s_list:
-        ser.write(s)
-    # flush out input commands
-    ser.wait()
-    ser.read(s_list)
+    ser.write_multiple(s_list)
 
-def absPosition(axis, amt, sp, ac, ser):
+def absPosition(axis, ser, amt, sp, ac):
     str1 = axis + sisk.ENABLE
     str2 = axis + sisk.ABS + ' ' + str(amt) 
     str3 = axis + sisk.MAX_VELOCITY + ' ' + str(sp)
@@ -52,7 +48,7 @@ def absPosition(axis, amt, sp, ac, ser):
     # write commands to device
     ser.write_multiple(s_list)
 
-def relPosition(axis, amt, sp, ac, ser):
+def relPosition(axis, ser, amt, sp, ac):
     str1 = axis + sisk.ENABLE
     str2 = axis + sisk.REL + ' ' + str(amt)
     str3 = axis + sisk.MAX_VELOCITY + ' ' + str(sp)

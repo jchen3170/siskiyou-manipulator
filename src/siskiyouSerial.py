@@ -13,7 +13,7 @@ class SiskiyouSerial():
     def __init__(self, port): 
         self.ser = serial.Serial(port)
         self.ser.baudrate = 38400
-        self.ser.timeout = 0.1
+        self.ser.timeout = 0.01
         if not self.ser.isOpen():
             self.ser.open()
         print (self.ser)
@@ -22,7 +22,6 @@ class SiskiyouSerial():
     def init(self):
         print ("Initializing...")
         self.write("2 st")
-        time.sleep(0.01)
         self.read()
         print ("\tComplete")
 
@@ -39,14 +38,20 @@ class SiskiyouSerial():
                 out += r
                 if (r == '\n'):
                     break
+                elif (r == ''):
+                    print "READ TIMEOUT"
+                    break
+            self.ser.flush()
             return out.replace("\r\n", '')
         else:
+            self.ser.flush()
             return self.ser.read(bits)
 
     # writes input command
     def write(self, s):
         s += "\r\n"
         out = self.ser.write(s)
+        self.ser.flush()
         self.read(out)
         return out
 
@@ -55,13 +60,13 @@ class SiskiyouSerial():
         bits = 0
         for s in s_list:
             bits += self.write(s)
-        self.wait()
         # flush out all output
-        self.read(bits)
+        # print "w_mult:", self.read(bits)
 
     # fixed wait time after writing for reading
     def wait(self):
-        time.sleep(0.025) # seconds
+        # time.sleep(0.025) # seconds
+        return 0
 
     # closes serial connection
     def close(self):
