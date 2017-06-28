@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+
+'''
+Library of constants used in interfacing with the manipulator
+'''
+
 ALL = "0 "
 X = "2 "
 Y = "3 "

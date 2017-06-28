@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 '''
-
+Wrapper class for pyserial with additional functionality added.
+Interfaces with and deals with all serial related code
 '''
 
 import time

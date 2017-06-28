@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 '''
-Motion library to control and communicate with Siskiyou Design Micromanipulator 
-(MX7000 Series).
-Interface is assuming RS-232 -> USB and 25pin -> USB.
+Command library to control and communicate with the manipulator
 '''
 import siskiyouSerial
 import time
@@ -12,7 +10,7 @@ import siskiyouLibrary as sisk
 # Sets home for selected axis for manipulator.
 # inputs: 
 #     axis: target axis 
-#     ser: python serial object
+#     ser: siskyouSerial object
 # returns:
 #     number of bytes written
 def setHome(axis, ser, val=None):
@@ -25,9 +23,9 @@ def setHome(axis, ser, val=None):
 # returns selected axis to home
 # inputs: 
 #     axis: target axis
+#     ser: siskyouSerial object
 #     sp: max velocity
 #     ac: acceleration rate
-#     ser: python serial object
 def returnHome(axis, ser, sp, ac):
     str1 = axis + sisk.ENABLE # enable drive
     str2 = axis + sisk.ABS + " 00000" # load absolute target position
@@ -38,6 +36,13 @@ def returnHome(axis, ser, sp, ac):
     # write commands to device
     ser.write_multiple(s_list)
 
+# moves selected axis to absolute position (relative to home)
+# inputs: 
+#     axis: target axis
+#     ser: siskyouSerial object
+#     amt: amount to move
+#     sp: max velocity
+#     ac: acceleration rate
 def absPosition(axis, ser, amt, sp, ac):
     str1 = axis + sisk.ENABLE
     str2 = axis + sisk.ABS + ' ' + str(amt) 
@@ -48,6 +53,13 @@ def absPosition(axis, ser, amt, sp, ac):
     # write commands to device
     ser.write_multiple(s_list)
 
+# moves selected axis to position relative to current position
+# inputs: 
+#     axis: target axis
+#     ser: siskyouSerial object
+#     amt: amount to move
+#     sp: max velocity
+#     ac: acceleration rate
 def relPosition(axis, ser, amt, sp, ac):
     str1 = axis + sisk.ENABLE
     str2 = axis + sisk.REL + ' ' + str(amt)
@@ -58,6 +70,12 @@ def relPosition(axis, ser, amt, sp, ac):
     # write commands to device
     ser.write_multiple(s_list)
 
+# gets position of selected axis
+# inputs:
+#     axis: target axis
+#     ser: siskyouSerial object
+# outputs:
+#     position of axis
 def getPosition(axis, ser):
     st = axis + sisk.POSITION
     ser.write(st)
@@ -68,6 +86,12 @@ def getPosition(axis, ser):
         return ''
     return hex2int(pos[1])
 
+# gets status of selected axis
+# inputs:
+#     axis: target axis
+#     ser: siskyouSerial object
+# outputs:
+#     status of axis
 def getStatus(axis, ser):
     st = axis + sisk.STATUS
     ser.write(st)
