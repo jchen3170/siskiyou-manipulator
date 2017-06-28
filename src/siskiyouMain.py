@@ -32,8 +32,8 @@ if __name__ == "__main__":
 
     print "Init pos:", command.getPosition(sisk.X, ser)
 
-    command.relPosition(sisk.X, 75000, 3000, 100, ser)
-    command.returnHome(sisk.X, 3000, 100, ser)
+    # command.relPosition(sisk.X, 75000, 3000, 100, ser)
+    # command.returnHome(sisk.X, 3000, 100, ser)
 
     # time.sleep(0.5)
     # print command.getPosition(sisk.X, ser)
