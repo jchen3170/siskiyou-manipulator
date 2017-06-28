@@ -29,34 +29,26 @@ class SiskiyouSerial():
     # read from port
     def read(self, bits=None):
         if bits is None:
-            n_end = 3
-        else:
-            a= self.ser.read(bits)
-            print "read:", repr(a)
-            return a
-        n = 0
-        r_out = ""
-        while True:
-            r = self.ser.read()
-            # print repr(r)
-            if (r == ''):
-                print "Read timeout"
-                break
+            r = self.ser.read(2)
+            if (r == "\r\n"):
+                out = ''
             else:
-                r_out += r
+                out = r
+            while True:
+                r = self.ser.read()
+                out += r
                 if (r == '\n'):
-                    n += 1
-                    if (n >= n_end):
-                        break
-        print "read:", repr(r_out)
-        return r_out
+                    break
+            return out.replace("\r\n", '')
+        else:
+            return self.ser.read(bits)
 
     # writes input command
     def write(self, s):
-        print "write:", repr(s + "\r\n")
-        # print s
-        # time.sleep(0.05)
-        return self.ser.write(s + "\r\n")
+        s += "\r\n"
+        out = self.ser.write(s)
+        self.read(out)
+        return out
 
     # writes multiple commands at once (ASSUMES NO OUTPUT BACK)
     def write_multiple(self, s_list):

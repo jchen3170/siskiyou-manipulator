@@ -67,8 +67,7 @@ def getPosition(axis, ser):
     ser.write(st)
     ser.wait()
     r = ser.read()
-    print repr(r)
-    pos = extract(r, st).split(' ')
+    pos = r.split(' ')
     if len(pos) != 2:
         return ''
     return hex2int(pos[1])
@@ -78,7 +77,7 @@ def getStatus(axis, ser):
     ser.write(st)
     ser.wait()
     r = ser.read()
-    status = extract(r, st).split(' ')
+    status = r.split(' ')
     if len(status) != 2:
         return ''
     return hex2bin(status[1])
@@ -95,7 +94,3 @@ def hex2int(st):
     if val >= 0x7FFFFFFF:
         val -= 0x100000000
     return val
-
-# extract the manipulator response
-def extract(r, st):
-    return r.replace(st, '').replace('\r', '').replace('\n', '')
