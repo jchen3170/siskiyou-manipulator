@@ -128,3 +128,7 @@ def hex2int(st):
     if val >= 0x7FFFFFFF:
         val -= 0x100000000
     return val
+
+def inch2encoder(val):
+    counts_per_inch = 5004181
+    return val*counts_per_inch

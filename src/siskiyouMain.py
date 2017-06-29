@@ -43,11 +43,26 @@ if __name__ == "__main__":
 
     print "initial:", position(ser)
 
-    command.moveRelative(sisk.X, ser, dist, vel, accel)
+    # command.moveRelative(sisk.X, ser, dist, vel, accel)
     command.moveRelative(sisk.Y, ser, dist, vel, accel)
-    command.moveRelative(sisk.Z, ser, dist, vel, accel)
+    # # command.moveRelative(sisk.Z, ser, dist, vel, accel)
 
+    # while True:
+    #     time.sleep(0.5)
+    #     print position(ser)
+    #     s = status(ser)
+    #     print s
+    #     if (s[0] != '' and s[1] != '' and s[2] != ''):
+    #         if (s[0][15] == '0' and s[1][15] == '0' and s[2][15] == '0'):
+    #             break
 
+    # print "mid:", position(ser)
+
+    # command.returnHome(sisk.X, ser, vel, accel)
+    # command.returnHome(sisk.Y, ser, vel, accel)
+    # # command.returnHome(sisk.Z, ser, vel, accel)
+
+    flag = 0
     while True:
         time.sleep(0.5)
         print position(ser)
@@ -55,22 +70,9 @@ if __name__ == "__main__":
         print s
         if (s[0] != '' and s[1] != '' and s[2] != ''):
             if (s[0][15] == '0' and s[1][15] == '0' and s[2][15] == '0'):
-                break
-
-    print "mid:", position(ser)
-
-    command.returnHome(sisk.X, ser, vel, accel)
-    command.returnHome(sisk.Y, ser, vel, accel)
-    command.returnHome(sisk.Z, ser, vel, accel)
-
-    while True:
-        time.sleep(0.5)
-        print position(ser)
-        s = status(ser)
-        print s
-        if (s[0] != '' and s[1] != '' and s[2] != ''):
-            if (s[0][15] == '0' and s[1][15] == '0' and s[2][15] == '0'):
-                break
+                flag += 1
+                if flag == 3:
+                    break
 
     print "end:", position(ser)
 

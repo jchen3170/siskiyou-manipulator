@@ -53,7 +53,9 @@ class SiskiyouSerial():
         s += "\r\n"
         out = self.ser.write(s)
         self.ser.flush()
+        time.sleep(0.02)
         self.read(out)
+        time.sleep(0.02)
         return out
 
     # writes multiple commands at once (ASSUMES NO OUTPUT BACK)
