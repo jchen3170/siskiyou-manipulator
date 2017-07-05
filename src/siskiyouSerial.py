@@ -40,7 +40,7 @@ class SiskiyouSerial():
                 if (r == '\n'):
                     break
                 elif (r == ''):
-                    print "READ TIMEOUT"
+                    # print "READ TIMEOUT"
                     break
             self.ser.flush()
             return out.replace("\r\n", '')

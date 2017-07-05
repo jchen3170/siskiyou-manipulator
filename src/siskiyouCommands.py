@@ -21,12 +21,10 @@ def setHome(axis, ser, val=None):
         st = axis + sisk.HOME + ' ' + str(val)
     return ser.write(st)
 
-def setTrajectoryPercent(axis, ser, val=None):
-    if val is None:
-        st = axis + sisk.TRAJECTORY + " 100"
-    else:
-        st = axis + sisk.TRAJECTORY + ' ' + str(val)
-    ser.write(st)
+def zeroAll(ser, sp, ac):
+    moveNegLimit(sisk.X, ser, sp, ac)
+    moveNegLimit(sisk.Y, ser, sp, ac)
+    moveNegLimit(sisk.Z, ser, sp, ac)
 
 # returns selected axis to home
 # inputs: 
@@ -78,6 +76,18 @@ def moveRelative(axis, ser, amt, sp, ac):
     # write commands to device
     ser.write_multiple(s_list)
 
+def moveNegLimit(axis, ser, sp, ac):
+    moveRelative(axis, ser, -sisk.ENCODER_MAX, sp, ac)
+
+def movePosLimit(axis, ser, sp, ac):
+    moveRelative(axis, ser, sisk.ENCODER_MAX, sp, ac)
+
+def checkLimit(axis, ser):
+    s = getStatus(axis, ser)
+    while s == '':
+        s = getStatus(axis, ser)
+    return s[0] == '1' or s[2] == '1'
+
 # gets position of selected axis
 # inputs:
 #     axis: target axis
@@ -92,7 +102,10 @@ def getPosition(axis, ser):
     pos = r.split(' ')
     if len(pos) != 2:
         return ''
-    return hex2int(pos[1])
+    elif pos[1] == '':
+        return ''
+    else:
+        return hex2int(pos[1])
 
 # gets status of selected axis
 # inputs:
@@ -108,7 +121,32 @@ def getStatus(axis, ser):
     status = r.split(' ')
     if len(status) != 2:
         return ''
-    return hex2bin(status[1])
+    elif status[1] == '':
+        return ''
+    else:
+        return hex2bin(status[1])
+
+def isMoving(status):
+    if status == '':
+        return ''
+    elif len(status) != 16:
+        return ''
+    else:
+        if status[15] == '1':
+            return True
+        else:
+            return False
+
+def isInPosition(status):
+    if status == '':
+        return ''
+    elif len(status) != 16:
+        return ''
+    else:
+        if status[14] == '1':
+            return True
+        else:
+            return False
 
 def init_controls(ser, P, I, D):
     P = 8000 # must be between 4000 - 32000
