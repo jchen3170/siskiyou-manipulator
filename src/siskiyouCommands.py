@@ -97,7 +97,6 @@ def checkLimit(axis, ser):
 def getPosition(axis, ser):
     st = axis + sisk.POSITION
     ser.write(st)
-    ser.wait()
     r = ser.read()
     pos = r.split(' ')
     if len(pos) != 2:
@@ -105,7 +104,11 @@ def getPosition(axis, ser):
     elif pos[1] == '':
         return ''
     else:
-        return hex2int(pos[1])
+        try:
+            return hex2int(pos[1])
+        except:
+            print "ERROR:", pos
+            return ''
 
 # gets status of selected axis
 # inputs:
@@ -116,7 +119,6 @@ def getPosition(axis, ser):
 def getStatus(axis, ser):
     st = axis + sisk.STATUS
     ser.write(st)
-    ser.wait()
     r = ser.read()
     status = r.split(' ')
     if len(status) != 2:
@@ -124,7 +126,11 @@ def getStatus(axis, ser):
     elif status[1] == '':
         return ''
     else:
-        return hex2bin(status[1])
+        try:
+            return hex2bin(status[1])
+        except:
+            print "ERROR:", status
+            return ''
 
 def isMoving(status):
     if status == '':

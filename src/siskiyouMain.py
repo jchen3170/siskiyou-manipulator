@@ -15,6 +15,18 @@ import siskiyouGetPort as port
 import siskiyouLibrary as sisk
 from siskiyou.msg import siskiyouPosition
 
+if __name__ == "__main__":
+    port = "/dev/ttyUSB0"
+    dist = 2000000
+    vel = 1000
+    accel = 100
+    delay = 8
+    axis = sisk.X
+
+    ser = siskiyouSerial.SiskiyouSerial(port)
+    
+    ser.close()
+
 def position(ser):
     x_pos = command.getPosition(sisk.X, ser)
     y_pos = command.getPosition(sisk.Y, ser)
@@ -40,54 +52,60 @@ def isFinished(s):
             return True
     return False
 
-if __name__ == "__main__":
-    port = "/dev/ttyUSB0"
-    accel = 100
-    vel = 1000
-    dist = 2000000
-    delay = 8
-    axis = sisk.X
-
-    ser = siskiyouSerial.SiskiyouSerial(port)
-    # ser.init()
-    # command.setHome(sisk.X, ser)
-    # command.setHome(sisk.Y, ser)
-    # command.setHome(sisk.Z, ser)
-
-    print "initial:", position(ser)
-
-    # command.moveNegLimit(sisk.Y, ser, vel, accel)
-
-    # command.moveRelative(sisk.X, ser, dist, vel, accel)
-    # command.moveRelative(sisk.Y, ser, dist, vel, accel)
-    command.moveRelative(sisk.Z, ser, dist, vel, accel)
-
-    # while True:
-    #     time.sleep(0.5)
-    #     print position(ser)
-    #     s = status(ser)
-    #     print s
-    #     if (s[0] != '' and s[1] != '' and s[2] != ''):
-    #         if (s[0][15] == '0' and s[1][15] == '0' and s[2][15] == '0'):
-    #             break
-
-    # print "mid:", position(ser)
-
-    # command.returnHome(sisk.X, ser, vel, accel)
-    # command.returnHome(sisk.Y, ser, vel, accel)
-    # # command.returnHome(sisk.Z, ser, vel, accel)
-
-    while True:
+def wait(ser):
+    while not isFinished(status(ser)):
         time.sleep(0.5)
         print position(ser)
-        if isFinished(status(ser)):
-            break
     print "limits:", (command.checkLimit(sisk.X, ser),
            command.checkLimit(sisk.Y, ser),
            command.checkLimit(sisk.Z, ser))
-    print "end:", position(ser)
 
-    ser.close()
+################################################################################
+################################################################################
 
+def zero_middle(ser, dist, vel, accel):
+    init_pos = position(ser)
+    print status(ser)
 
+    command.zeroAll(ser, vel, accel)
 
+    wait(ser)
+    mid_pos = position(ser)
+
+    command.moveRelative(sisk.X, ser, dist, vel, accel)
+    command.moveRelative(sisk.Y, ser, dist, vel, accel)
+    command.moveRelative(sisk.Z, ser, dist, vel, accel)
+
+    wait(ser)
+    end_pos = position(ser)
+
+    command.setHome(sisk.X, ser)
+    command.setHome(sisk.Y, ser)
+    command.setHome(sisk.Z, ser)
+
+    print "initial:", init_pos
+    print "mid:", mid_pos
+    print "end:", end_pos
+
+def test_move(ser, dist, vel, accel):
+    init_pos = position(ser)
+    print status(ser)
+
+    command.moveRelative(sisk.X, ser, dist, vel, accel)
+    command.moveRelative(sisk.Y, ser, dist, vel, accel)
+    command.moveRelative(sisk.Z, ser, dist, vel, accel)
+
+    wait(ser)
+    mid_pos = position(ser)
+    print "MID"
+
+    command.returnHome(sisk.X, ser, vel, accel)
+    command.returnHome(sisk.Y, ser, vel, accel)
+    command.returnHome(sisk.Z, ser, vel, accel)
+
+    wait(ser)
+    end_pos = position(ser)
+
+    print "initial:", init_pos
+    print "mid:", mid_pos
+    print "end:", end_pos
