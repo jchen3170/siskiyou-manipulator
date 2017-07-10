@@ -21,5 +21,7 @@ REL = "lr"
 MAX_VELOCITY = "sp"
 ACCEL = "ac"
 DECEL = "dc"
+VELOCITY_MODE = "v"
+ABORT_MOTION = "ab"
 
 ENCODER_MAX = 4200000

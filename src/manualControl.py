@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+
+'''
+Manual control script for the manipulator
+'''
+
 import curses
 import time
 
@@ -22,30 +27,43 @@ def main(stdscr):
         key = stdscr.getch()
         stdscr.refresh()
         if key == curses.KEY_UP:
-            command.moveRelative(sisk.Y, ser, dist, vel, accel)
+            # command.moveRelative(sisk.Y, ser, dist, vel, accel)
+            command.velocityMode(sisk.Y, ser, vel, accel)
         elif key == curses.KEY_DOWN:
-            command.moveRelative(sisk.Y, ser, -dist, vel, accel)
+            command.velocityMode(sisk.Y, ser, -vel, accel)
         elif key == curses.KEY_LEFT:
-            command.moveRelative(sisk.X, ser, -dist, vel, accel)
+            command.velocityMode(sisk.X, ser, -vel, accel)
         elif key == curses.KEY_RIGHT:
-            command.moveRelative(sisk.X, ser, dist, vel, accel)
-        elif key == ord('z'):
-            command.moveRelative(sisk.Z, ser, dist, vel, accel)
-        elif key == ord('x'):
-            command.moveRelative(sisk.Z, ser, -dist, vel, accel)
+            command.velocityMode(sisk.X, ser, vel, accel)
+        elif key == ord('s'):
+            # command.moveRelative(sisk.Z, ser, dist, vel, accel)
+            command.velocityMode(sisk.Z, ser, vel, accel)
+        elif key == ord('w'):
+            # command.moveRelative(sisk.Z, ser, -dist, vel, accel)
+            command.velocityMode(sisk.Z, ser, -vel, accel)
         elif key == ord('R'):
             stdscr.clear()
             stdscr.addstr(0,0,"Resetting positions...")
             stdscr.refresh()
             pos = zero_middle(ser, dist, vel, accel, stdscr)
             stdscr.addstr(2,0,"position: " + str(pos))
+        elif key == ord('X'):
+            command.velocityModeDisable(sisk.X, ser)
+        elif key == ord('Y'):
+            command.velocityModeDisable(sisk.Y, ser)
+        elif key == ord('Z'):
+            command.velocityModeDisable(sisk.Z, ser)
+        elif key == ord('P'):
+            command.velocityModeDisable(sisk.X, ser)
+            command.velocityModeDisable(sisk.Y, ser)
+            command.velocityModeDisable(sisk.Z, ser)
 
         stdscr.clear()
         pos = position(ser)
         stat = status(ser)
         lims = limits(ser)
         stdscr.addstr(0,0,
-            "'q' to quit; 'up/down' for Y; 'left/right' for X; 'z/x' for Z")
+            "'q' to quit; 'up/down' for Y; 'left/right' for X; 's/w' for Z")
         stdscr.addstr(2,0,"position: " + str(pos))
         stdscr.addstr(4,0,"status: " + str(stat))
         stdscr.addstr(6,0,"limits: " + str(lims))

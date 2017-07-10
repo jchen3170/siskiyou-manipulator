@@ -7,7 +7,14 @@ project(siskiyou)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   message_generation
+  std_msgs
+  sensor_msgs
+  cv_bridge
 )
+
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)

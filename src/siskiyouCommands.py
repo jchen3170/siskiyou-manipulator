@@ -70,23 +70,35 @@ def moveRelative(axis, ser, amt, sp, ac):
     str1 = axis + sisk.ENABLE
     str2 = axis + sisk.REL + ' ' + str(amt)
     str3 = axis + sisk.MAX_VELOCITY + ' ' + str(sp)
-    str4 = axis + sisk.ACCEL + ' ' +str(ac)
+    str4 = axis + sisk.ACCEL + ' ' + str(ac)
     str5 = axis + sisk.MOVE
     s_list = [str1, str2, str3, str4, str5]
     # write commands to device
     ser.write_multiple(s_list)
 
 def moveNegLimit(axis, ser, sp, ac):
-    moveRelative(axis, ser, -sisk.ENCODER_MAX, sp, ac)
+    velocityMode(axis, ser, -sp, ac)
 
 def movePosLimit(axis, ser, sp, ac):
-    moveRelative(axis, ser, sisk.ENCODER_MAX, sp, ac)
+    velocityMode(axis, ser, sp, ac)
 
 def checkLimit(axis, ser):
     s = getStatus(axis, ser)
     while s == '':
         s = getStatus(axis, ser)
     return s[0] == '1' or s[2] == '1'
+
+def velocityMode(axis, ser, amt, ac):
+    str1 = axis + sisk.ENABLE
+    str2 = axis + sisk.ACCEL + ' ' + str(ac)
+    str3 = axis + sisk.VELOCITY_MODE + ' ' + str(amt)
+    s_list = [str1, str2, str3]
+    ser.write_multiple(s_list)
+
+def velocityModeDisable(axis, ser):
+    ac = 100
+    sp = 2000
+    moveRelative(axis, ser, 0, sp, ac)
 
 # gets position of selected axis
 # inputs:
