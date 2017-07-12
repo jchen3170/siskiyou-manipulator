@@ -29,10 +29,10 @@ import time
 
 if __name__ == "__main__":
     cap = cv2.VideoCapture(
-        "/home/denise/catkin_ws/src/siskiyou/media/pipette_focus.avi")
+        "/home/Documents/Jason/media/pipette_focus.avi")
 
     frame = cv2.imread(
-        "/home/denise/catkin_ws/src/siskiyou/media/pipette_frame.png")
+        "/home/Documents/Jason/media/pipette_frame.png")
 
     if cap.isOpened():
         v_w = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
