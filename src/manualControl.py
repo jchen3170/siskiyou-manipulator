@@ -9,7 +9,6 @@ import time
 
 import siskiyouSerial
 import siskiyouCommands as command
-import siskiyouGetPort as port
 import siskiyouLibrary as sisk
 
 ser = None

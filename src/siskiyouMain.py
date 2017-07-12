@@ -23,9 +23,8 @@ if __name__ == "__main__":
     delay = 8
     axis = sisk.X
 
-    ser = siskiyouSerial.SiskiyouSerial(port)
-    
-    ser.close()
+    # ser = siskiyouSerial.SiskiyouSerial(port)
+    # ser.close()
 
 def position(ser):
     x_pos = command.getPosition(sisk.X, ser)
