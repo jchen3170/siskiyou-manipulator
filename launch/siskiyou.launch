@@ -1,0 +1,5 @@
+<launch>
+    <remap from="image_raw" to="camera/image_raw"/>
+        <node pkg="pointgrey_camera_driver" name="pointgrey" type="camera_node"/>
+    <node pkg="siskiyou" name="siskiyou" type="siskiyouMain.py"/>
+</launch>
