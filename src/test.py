@@ -38,11 +38,13 @@ if __name__ == "__main__":
         v_w = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
         v_h = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
 
-        offset = 50
+        offset = 80
         cv2.namedWindow("figure")
         cv2.namedWindow("figure2")
+        cv2.namedWindow("figure3")
         cv2.moveWindow("figure", offset, offset)
         cv2.moveWindow("figure2", offset+v_w, offset)
+        cv2.moveWindow("figure3", offset, offset+v_h+56)
 
         while True:
             ret, frame = cap.read()
@@ -50,8 +52,6 @@ if __name__ == "__main__":
                 break
 
             frame_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-            # frame = cv2.medianBlur(frame, 5)
             
             # [120-165, 0-255, 0-255*0.38]
             lower = np.array([120, 0, 0])
@@ -62,18 +62,55 @@ if __name__ == "__main__":
             mask_median = cv2.medianBlur(mask, 5)
             mask_close = cv2.morphologyEx(mask_median, 
                 cv2.MORPH_CLOSE, np.ones((20,20),np.uint8))
+            mask = mask_close.copy()
 
             edges = cv2.Canny(mask_close, 100, 200)
             line = np.zeros((v_h,v_w,3), np.uint8)
-            line[:,:,1] = 255
+            line[:,:,2] = 255
             outline = cv2.bitwise_and(line, line, mask=edges)
             frame_prep = cv2.bitwise_and(frame, frame, 
                 mask=cv2.bitwise_not(edges))
             overlay = cv2.add(frame_prep, outline)
-            # overlay = cv2.add(frame, overlay)
 
-            cv2.imshow("figure", overlay)
-            cv2.imshow("figure2", mask_close)
+            contours , _ = cv2.findContours(mask_close, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+            cnt = contours[0]
+            max_area = cv2.contourArea(cnt)
+            for c in contours:
+                area = cv2.contourArea(c)
+                if area > max_area:
+                    cnt = c
+                    max_area = area
+            peri = cv2.arcLength(cnt, True)
+            eps = peri * 0.045
+            approx = cv2.approxPolyDP(cnt, eps, True)
+            cnt_mask = np.zeros((v_h,v_w,1), np.uint8)
+            cv2.drawContours(cnt_mask, [approx], -1, (255), 1)
+
+            line2 = np.zeros((v_h,v_w,3), np.uint8)
+            line2[:,:,1] = 255
+            outline2 = cv2.bitwise_and(line2,line2,mask=cnt_mask)
+            frame_prep = cv2.bitwise_and(overlay,overlay,
+                mask=cv2.bitwise_not(cnt_mask))
+            overlay2 = cv2.add(frame_prep, outline2)
+
+            if len(approx) is 3:
+                max_sum = 0
+                corner = 0
+                for pt1 in approx:
+                    d_sum = 0
+                    for pt2 in approx:
+                        d_sum += np.linalg.norm(pt1-pt2)
+                    if d_sum > max_sum:
+                        corner = pt1
+                        max_sum = d_sum
+                corner = tuple(map(tuple, corner))[0]
+                cv2.circle(overlay2, corner, 2, (255,255,255), -1)
+                cv2.circle(frame, corner, 2, (255,255,255), -1)
+
+            cv2.imshow("figure", frame)
+            cv2.imshow("figure2", overlay2)
+            cv2.imshow("figure3", mask)
+            
             cv2.waitKey(1)
         
         print "Finished!"
