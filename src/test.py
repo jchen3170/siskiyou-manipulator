@@ -8,7 +8,7 @@ import numpy as np
 
 import time
 
-video_flag  = False
+using_camera  = False
 
 bridge = ''
 def callback(data):
@@ -166,8 +166,8 @@ def video_main():
         print "Problem with video"
 
 if __name__ == "__main__":
-    if video_flag:
-        video_main()
-    else:
+    if using_camera:
         bridge = CvBridge()
         listen()
+    else:
+        video_main()
