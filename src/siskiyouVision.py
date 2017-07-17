@@ -5,6 +5,16 @@ from cv_bridge import CvBridge, CvBridgeError
 import cv2
 import numpy as np
 
+# function for finding the tip of a pipette.
+# adjust HSV min-max values accordingly
+# inputs: 
+#     frame: image (in BGR format)
+#     visuals: boolean (if true returns additional images for display)
+# outputs:
+#     corner: the coordinate of the pipette tip
+#     mask: mask from HSV filter
+#     cnt_mask: contour mask from contour approximation
+#     edge: edge map of mask
 def find_tip(frame, visuals):   
     v_h, v_w, _ = frame.shape
 
@@ -69,6 +79,13 @@ def find_tip(frame, visuals):
         else:
             return None
 
+# draws the input mask on the input image with the input color
+# inputs:
+#     img: the image in BGR format
+#     mask: the mask to draw with
+#     color: BGR tuple for color
+# outputs:
+#     img: original image with mask drawn on
 def draw_mask(img, mask, color):
     h, w, _ = img.shape
     blank = np.zeros((h,w,3), np.uint8)
