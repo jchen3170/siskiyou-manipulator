@@ -10,9 +10,16 @@ def find_tip(frame, visuals):
 
     frame_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     
+    hue_min = 120
+    hue_max = 170
+    sat_min = 0
+    sat_max = int(255*0.50)
+    val_min = 0
+    val_max = int(255*0.36)
+
     # [120-165, 0-255, 0-255*0.38]
-    lower = np.array([120, 0, 0])
-    upper = np.array([170, int(255*0.50), int(255*0.36)])
+    lower = np.array([hue_min, sat_min, val_min])
+    upper = np.array([hue_max, sat_max, val_max])
     mask = cv2.inRange(frame_hsv, lower, upper)
 
     mask_median = cv2.medianBlur(mask, 5)
