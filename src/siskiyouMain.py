@@ -7,104 +7,75 @@ Assumes R232->USB and 25pin->USB
 
 '''
 
-import time
+import rospy
+import cv2
+import numpy as np
+from cv_bridge import CvBridge, CvBridgeError
+from sensor_msgs.msg import Image
 
 import siskiyouSerial
 import siskiyouCommands as command
-import siskiyouGetPort as port
 import siskiyouLibrary as sisk
-from siskiyou.msg import siskiyouPosition
+import siskiyouVision as vision
+# import siskiyouGetPort as port
+
+def main_loop():
+    cv2.namedWindow("figure")
+    cv2.namedWindow("figure2")
+    cv2.namedWindow("figure3")
+
+    rospy.init_node('listen', anonymous=True)
+    rospy.Subscriber("/camera/image_raw", Image, callback)
+
+    # while not rospy.is_shutdown():
+
+    
+    rospy.spin()
+
+def callback(data):
+    frame = bridge.imgmsg_to_cv2(data, "bgr8")
+
+    (corner, visual_tuple) = vision.find_tip(frame, True)
+
+    mask = np.zeros(frame.shape, np.uint8)
+    cnt_mask = np.zeros(frame.shape, np.uint8)
+    edges = np.zeros(frame.shape, np.uint8)
+
+    if visual_tuple is not None:
+        mask = visual_tuple[0]
+        cnt_mask = visual_tuple[1]
+        edges = visual_tuple[2]
+        overlay = vision.draw_mask(frame, edges, (0, 0, 255))
+        overlay = vision.draw_mask(overlay, cnt_mask, (0,255,0))
+    else:
+        overlay = frame
+
+    if corner is not None:
+        cv2.circle(frame, corner, 2, (255,255,255), -1)
+        cv2.circle(overlay, corner, 2, (255,255,255), -1)
+
+    cv2.imshow("figure", frame)
+    cv2.imshow("figure2", overlay)
+    cv2.imshow("figure3", mask)
+
+    offset = 80
+    v_h, v_w, _ = frame.shape
+    cv2.moveWindow("figure", offset, offset)
+    cv2.moveWindow("figure2", offset+v_w, offset)
+    cv2.moveWindow("figure3", offset, offset+v_h+56)
+
+    cv2.waitKey(1)
 
 if __name__ == "__main__":
     port = "/dev/ttyUSB0"
-    dist = 2000000
     vel = 1000
     accel = 100
-    delay = 8
-    axis = sisk.X
+    dist = 2000000
 
+    bridge = CvBridge()
     # ser = siskiyouSerial.SiskiyouSerial(port)
     # ser.close()
 
-def position(ser):
-    x_pos = command.getPosition(sisk.X, ser)
-    y_pos = command.getPosition(sisk.Y, ser)
-    z_pos = command.getPosition(sisk.Z, ser)
-    return (x_pos, y_pos, z_pos)
+    main_loop()
 
-def status(ser):
-    x_status = command.getStatus(sisk.X, ser)
-    y_status = command.getStatus(sisk.Y, ser)
-    z_status = command.getStatus(sisk.Z, ser)
-    return (x_status, y_status, z_status)
-
-def isFinished(s):
-    moving = (command.isMoving(s[0]),
-              command.isMoving(s[1]),
-              command.isMoving(s[2]))
-    inpos = (command.isInPosition(s[0]),
-             command.isInPosition(s[1]),
-             command.isInPosition(s[2]))
-    if '' not in s:
-        if (True not in moving) and (False not in inpos):
-            print "status:", s
-            return True
-    return False
-
-def wait(ser):
-    while not isFinished(status(ser)):
-        time.sleep(0.5)
-        print position(ser)
-    print "limits:", (command.checkLimit(sisk.X, ser),
-           command.checkLimit(sisk.Y, ser),
-           command.checkLimit(sisk.Z, ser))
-
-################################################################################
-################################################################################
-
-def zero_middle(ser, dist, vel, accel):
-    init_pos = position(ser)
-    print status(ser)
-
-    command.zeroAll(ser, vel, accel)
-
-    wait(ser)
-    mid_pos = position(ser)
-
-    command.moveRelative(sisk.X, ser, dist, vel, accel)
-    command.moveRelative(sisk.Y, ser, dist, vel, accel)
-    command.moveRelative(sisk.Z, ser, dist, vel, accel)
-
-    wait(ser)
-    end_pos = position(ser)
-
-    command.setHome(sisk.X, ser)
-    command.setHome(sisk.Y, ser)
-    command.setHome(sisk.Z, ser)
-
-    print "initial:", init_pos
-    print "mid:", mid_pos
-    print "end:", end_pos
-
-def test_move(ser, dist, vel, accel):
-    init_pos = position(ser)
-    print status(ser)
-
-    command.moveRelative(sisk.X, ser, dist, vel, accel)
-    command.moveRelative(sisk.Y, ser, dist, vel, accel)
-    command.moveRelative(sisk.Z, ser, dist, vel, accel)
-
-    wait(ser)
-    mid_pos = position(ser)
-    print "MID"
-
-    command.returnHome(sisk.X, ser, vel, accel)
-    command.returnHome(sisk.Y, ser, vel, accel)
-    command.returnHome(sisk.Z, ser, vel, accel)
-
-    wait(ser)
-    end_pos = position(ser)
-
-    print "initial:", init_pos
-    print "mid:", mid_pos
-    print "end:", end_pos
+    
