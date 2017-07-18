@@ -87,13 +87,16 @@ def find_tip(frame, visuals):
 # outputs:
 #     img: original image with mask drawn on
 def draw_mask(img, mask, color):
-    h, w, _ = img.shape
-    blank = np.zeros((h,w,3), np.uint8)
-    n = 0
-    for c in color:
-        blank[:,:,n] = c
-        n += 1
-    outline = cv2.bitwise_and(blank, blank, mask=mask)
-    img_prep = cv2.bitwise_and(img, img, 
-        mask=cv2.bitwise_not(mask))
-    return cv2.add(img_prep, outline)
+    if np.any(mask):
+        h, w, _ = img.shape
+        blank = np.zeros((h,w,3), np.uint8)
+        n = 0
+        for c in color:
+            blank[:,:,n] = c
+            n += 1
+        outline = cv2.bitwise_and(blank, blank, mask=mask)
+        img_prep = cv2.bitwise_and(img, img, 
+            mask=cv2.bitwise_not(mask))
+        return cv2.add(img_prep, outline)
+    else:
+        return img
