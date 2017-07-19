@@ -19,24 +19,42 @@ import siskiyouLibrary as sisk
 import siskiyouVision as vision
 # import siskiyouGetPort as port
 
-corner = None
+cnt_mask = None
+display_flag = False
 def main_loop():
     cv2.namedWindow("figure")
     cv2.namedWindow("figure2")
     cv2.namedWindow("figure3")
-    # cv2.namedWindow("figure4")
+    cv2.namedWindow("figure4")
 
 
-    rospy.init_node('listen', anonymous=True)
-    rospy.Subscriber("/camera/image_raw", Image, callback)
-    time.sleep(2)
+    rospy.init_node("siskiyouMain", anonymous=False)
+    rospy.Subscriber("/camera/image_raw", Image, callback, queue_size=10)
+
+
+
+    # r = rospy.Rate(65)
     # while not rospy.is_shutdown():
-    #     if corner is not None:
-    #         print corner
+    #     if cnt_mask is not None:
+    #         if len(cnt_mask.shape) is not 3:
+    #             print "uh oh"
+    #             print cnt_mask.shape
+    #             print cnt_mask
+    #         else:
+    #             try:
+    #                 cv2.imshow("figure4", cnt_mask)
+    #             except:
+    #                 print "error"
+    #                 print cnt_mask.shape
+    #                 print cnt_mask
+    #     r.sleep()
+
     rospy.spin()
 
 def callback(data):
-    global corner
+    global cnt_mask
+    global display_flag
+
     frame = bridge.imgmsg_to_cv2(data, "bgr8")
 
     (corner, visual_tuple) = vision.find_tip(frame, True)
@@ -48,7 +66,7 @@ def callback(data):
     if visual_tuple is not None:
         mask = visual_tuple[0]
         cnt_mask = visual_tuple[1]
-        # edges = visual_tuple[2]
+        edges = visual_tuple[2]
         overlay = vision.draw_mask(frame, edges, (0, 0, 255))
         overlay = vision.draw_mask(overlay, cnt_mask, (0,255,0))
     else:
@@ -61,14 +79,18 @@ def callback(data):
     cv2.imshow("figure", frame)
     cv2.imshow("figure2", overlay)
     cv2.imshow("figure3", mask)
+    cv2.imshow("figure4", cnt_mask)
 
-    offset_w = 70
-    offset_h = 50
-    v_h, v_w, _ = frame.shape
-    cv2.moveWindow("figure", offset_w, offset_h)
-    cv2.moveWindow("figure2", offset_w+v_w, offset_h)
-    cv2.moveWindow("figure3", offset_w, offset_h+v_h+30)
-    # cv2.moveWindow("figure4", offset+v_w, offset+v_h+56)
+    if not display_flag:
+        offset_w = 80
+        offset_h = 50
+        offset_bar = 29
+        v_h, v_w, _ = frame.shape
+        cv2.moveWindow("figure", offset_w, offset_h)
+        cv2.moveWindow("figure2", offset_w+v_w+1, offset_h)
+        cv2.moveWindow("figure3", offset_w, offset_h+v_h+offset_bar)
+        cv2.moveWindow("figure4", offset_w+v_w+1, offset_h+v_h+offset_bar)
+        display_flag = True
 
     cv2.waitKey(1)
 

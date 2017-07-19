@@ -13,8 +13,11 @@ if __name__ == "__main__":
     rospy.init_node("video_publisher")
     pub = rospy.Publisher("/camera/image_raw", Image, queue_size=10)
     bridge = CvBridge()
-    r = rospy.Rate(100)
+    r = rospy.Rate(65)
+    print "publishing..."
+    loop_n = 0
     while not rospy.is_shutdown():
+        print "loop:", loop_n
         cap = cv2.VideoCapture(path)
         ret = True
         while True:
@@ -25,5 +28,6 @@ if __name__ == "__main__":
             frame_msg = bridge.cv2_to_imgmsg(frame, encoding="bgr8")
             pub.publish(frame_msg)
             r.sleep()
+        loop_n += 1
 
 
