@@ -20,6 +20,8 @@ class Window:
         container.pack(anchor="w")
         container2 = tk.Frame(root)
         container2.pack()
+        container_adv = tk.Frame(root)
+        container_adv.pack(pady=(20,0))
 
         spacing_y = 10
         frame_text = tk.Frame(container)
@@ -43,6 +45,8 @@ class Window:
         text3.pack(anchor="w", pady=pad_y)
         text4 = tk.Label(frame_text, text="Status: ", font=font)
         text4.pack(anchor="w", pady=pad_y)
+        text5 = tk.Label(frame_text, text="Velocity: ", font=font)
+        text5.pack(anchor="w", pady=pad_y)
 
         self.pos = (0, 0, 0)
         self.pos_var = tk.StringVar()
@@ -56,6 +60,9 @@ class Window:
         self.raw = ('0101000100001010', '0101000100001010', '0101000100001010')
         self.raw_var = tk.StringVar()
         self.raw_var.set(str(self.raw))
+        self.vel = (0, 0, 0)
+        self.vel_var = tk.StringVar()
+        self.vel_var.set(str(self.vel))
 
         xyz = tk.Label(frame_value, text="(X, Y, Z)", font=font)
         xyz.pack(anchor="w", pady=pad_y)
@@ -67,6 +74,8 @@ class Window:
         limits.pack(anchor="w", pady=pad_y)
         status = tk.Label(frame_value, textvariable=self.raw_var, font=font)
         status.pack(anchor="w", pady=pad_y)
+        velocity = tk.Label(frame_value, textvariable=self.vel_var, font=font)
+        velocity.pack(anchor="w", pady=pad_y)
 
         pad_x_button = 40
         zero_x = tk.Button(frame_buttons_top, text="Zero X", 
@@ -99,8 +108,13 @@ class Window:
             command= lambda: self.stopMove(sisk.Z))
         stop_z.pack(side="left", padx=pad_x_button)
 
+        home = tk.Button(container_adv, text="Return Home", command=self.returnHome)
+        home.pack(side="left")
+        reset = tk.Button(container_adv, text="Reset", command=self.reset)
+        reset.pack(side="left")
+
         close_button = tk.Button(root, text="Close", command=self.stop)
-        close_button.pack(side="bottom")
+        close_button.pack(side="bottom", pady=(0,5))
 
         frame_value.grid_rowconfigure(1, minsize=50)
         frame_value.grid_columnconfigure(1, minsize=20)
@@ -123,6 +137,12 @@ class Window:
 
     def stopMove(self, axis):
         print "Stop", axis
+
+    def returnHome(self):
+        print "Returning Home"
+
+    def reset(self):
+        print "Resetting"
 
     def setPosition(self, pos):
         self.pos = pos
