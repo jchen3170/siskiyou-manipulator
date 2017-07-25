@@ -14,45 +14,41 @@ from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 
 import siskiyouSerial
-import siskiyouCommands as command
+import siskiyouCommands as com
 import siskiyouLibrary as sisk
 import siskiyouVision as vision
+import siskiyouGUI
 # import siskiyouGetPort as port
 
-cnt_mask = None
 display_flag = False
-def main_loop():
-    cv2.namedWindow("figure")
-    cv2.namedWindow("figure2")
-    cv2.namedWindow("figure3")
-    cv2.namedWindow("figure4")
+def main_loop(ser, gui):
+    # cv2.namedWindow("figure")
+    # cv2.namedWindow("figure2")
+    # cv2.namedWindow("figure3")
+    # cv2.namedWindow("figure4")
+    # rospy.init_node("siskiyouMain", anonymous=False)
+    # rospy.Subscriber("/camera/image_raw", Image, callback, queue_size=10)
+    # rospy.spin()
 
+    pos = (0,0,0)
+    mov = (False,False,False)
+    lims = (False,False,False)
+    status = ('0','0','0')
 
-    rospy.init_node("siskiyouMain", anonymous=False)
-    rospy.Subscriber("/camera/image_raw", Image, callback, queue_size=10)
+    while True:
+        pos = com.getPositionAll(ser)
+        mov, lims, status = com.getStatusAll(ser)
 
+        gui.setPosition(pos)
+        gui.setMoving(mov)
+        gui.setLimits(lims)
+        gui.setStatus(status)
+        flag = gui.update()
 
-
-    # r = rospy.Rate(65)
-    # while not rospy.is_shutdown():
-    #     if cnt_mask is not None:
-    #         if len(cnt_mask.shape) is not 3:
-    #             print "uh oh"
-    #             print cnt_mask.shape
-    #             print cnt_mask
-    #         else:
-    #             try:
-    #                 cv2.imshow("figure4", cnt_mask)
-    #             except:
-    #                 print "error"
-    #                 print cnt_mask.shape
-    #                 print cnt_mask
-    #     r.sleep()
-
-    rospy.spin()
+        if rospy.is_shutdown() or flag:
+            break
 
 def callback(data):
-    global cnt_mask
     global display_flag
 
     frame = bridge.imgmsg_to_cv2(data, "bgr8")
@@ -101,9 +97,9 @@ if __name__ == "__main__":
     dist = 2000000
 
     bridge = CvBridge()
-    # ser = siskiyouSerial.SiskiyouSerial(port)
-    # ser.close()
+    ser = siskiyouSerial.SiskiyouSerial(port)
+    gui = siskiyouGUI.Window(ser)
 
-    main_loop()
+    main_loop(ser, gui)
 
-    
+    ser.close()

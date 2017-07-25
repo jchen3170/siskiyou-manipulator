@@ -82,12 +82,6 @@ def moveNegLimit(axis, ser, sp, ac):
 def movePosLimit(axis, ser, sp, ac):
     velocityMode(axis, ser, sp, ac)
 
-def checkLimit(axis, ser):
-    s = getStatus(axis, ser)
-    while s == '':
-        s = getStatus(axis, ser)
-    return s[0] == '1' or s[2] == '1'
-
 def velocityMode(axis, ser, amt, ac):
     str1 = axis + sisk.ENABLE
     str2 = axis + sisk.ACCEL + ' ' + str(ac)
@@ -122,6 +116,12 @@ def getPosition(axis, ser):
             print "ERROR:", pos
             return ''
 
+def getPositionAll(ser):
+    x = getPosition(sisk.X, ser)
+    y = getPosition(sisk.Y, ser)
+    z = getPosition(sisk.Z, ser)
+    return (x,y,z)
+
 # gets status of selected axis
 # inputs:
 #     axis: target axis
@@ -155,6 +155,29 @@ def isMoving(status):
         else:
             return False
 
+def checkLimit(axis=None, ser=None, stat=None):
+    if stat is None:
+        s = getStatus(axis, ser)
+    else:
+        s = stat
+    if len(s) < 3:
+        return ''
+    else:
+        return s[0] == '1' or s[2] == '1'
+
+def getStatusAll(ser):
+    x = getStatus(sisk.X, ser)
+    y = getStatus(sisk.Y, ser)
+    z = getStatus(sisk.Z, ser)
+    xm = isMoving(x)
+    ym = isMoving(y)
+    zm = isMoving(z)
+    xl = checkLimit(stat=x)
+    yl = checkLimit(stat=y)
+    zl = checkLimit(stat=z)
+
+    return ((xm, ym, zm), (xl, yl, zl), (x, y, z))
+
 def isInPosition(status):
     if status == '':
         return ''
@@ -165,6 +188,19 @@ def isInPosition(status):
             return True
         else:
             return False
+
+def isPathComplete(ser):
+    s = getStatusAll(ser)
+    moving = (command.isMoving(s[0]),
+              command.isMoving(s[1]),
+              command.isMoving(s[2]))
+    inpos = (command.isInPosition(s[0]),
+             command.isInPosition(s[1]),
+             command.isInPosition(s[2]))
+    if '' not in s:
+        if (True not in moving) and (False not in inpos):
+            return True
+    return False
 
 def init_controls(ser, P, I, D):
     P = 8000 # must be between 4000 - 32000

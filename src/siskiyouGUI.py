@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 
 import Tkinter as tk
-import siskiyouCommands as command
+import siskiyouCommands as com
 import siskiyouLibrary as sisk
 import time
 
+vel = 2000
+accel = 100
 class Window:
-    def __init__(self):
+    def __init__(self, ser):
         root = tk.Tk()
         root.title("Manipulator Status")
         root.resizable(width=False, height=False)
         root.geometry("{}x{}".format(700,500))
 
         font = ("TkDefaultFont",12)
-        self.stop_flag = False
         pad_y = 5
 
         container = tk.Frame(root)
@@ -79,47 +80,51 @@ class Window:
 
         pad_x_button = 40
         zero_x = tk.Button(frame_buttons_top, text="Zero X", 
-            command= lambda: self.zero(sisk.X))
+            com= lambda: self.zero(sisk.X))
         zero_x.pack(side="left", padx=pad_x_button)
         zero_y = tk.Button(frame_buttons_top, text="Zero Y", 
-            command= lambda: self.zero(sisk.Y))
+            com= lambda: self.zero(sisk.Y))
         zero_y.pack(side="left", padx=pad_x_button)
         zero_z = tk.Button(frame_buttons_top, text="Zero Z", 
-            command= lambda: self.zero(sisk.Z))
+            com= lambda: self.zero(sisk.Z))
         zero_z.pack(side="left", padx=pad_x_button)
 
         move_x = tk.Button(frame_buttons_mid, text="Move X", 
-            command= lambda: self.move(sisk.X))
+            com= lambda: self.move(sisk.X))
         move_x.pack(side="left", padx=pad_x_button)
         move_y = tk.Button(frame_buttons_mid, text="Move Y", 
-            command= lambda: self.move(sisk.Y))
+            com= lambda: self.move(sisk.Y))
         move_y.pack(side="left", padx=pad_x_button)
         move_z = tk.Button(frame_buttons_mid, text="Move Z", 
-            command= lambda: self.move(sisk.Z))
+            com= lambda: self.move(sisk.Z))
         move_z.pack(side="left", padx=pad_x_button)
 
         stop_x = tk.Button(frame_buttons_bot, text="Stop X", 
-            command= lambda: self.stopMove(sisk.X))
+            com= lambda: self.stopMove(sisk.X))
         stop_x.pack(side="left", padx=pad_x_button)
         stop_y = tk.Button(frame_buttons_bot, text="Stop Y", 
-            command= lambda: self.stopMove(sisk.Y))
+            com= lambda: self.stopMove(sisk.Y))
         stop_y.pack(side="left", padx=pad_x_button)
         stop_z = tk.Button(frame_buttons_bot, text="Stop Z", 
-            command= lambda: self.stopMove(sisk.Z))
+            com= lambda: self.stopMove(sisk.Z))
         stop_z.pack(side="left", padx=pad_x_button)
 
-        home = tk.Button(container_adv, text="Return Home", command=self.returnHome)
-        home.pack(side="left")
-        reset = tk.Button(container_adv, text="Reset", command=self.reset)
-        reset.pack(side="left")
+        home = tk.Button(container_adv, text="Return Home", com=self.returnHome)
+        home.pack(side="left", padx=20)
+        reset = tk.Button(container_adv, text="Reset", com=self.reset)
+        reset.pack(side="left", padx=45)
 
-        close_button = tk.Button(root, text="Close", command=self.stop)
+        close_button = tk.Button(root, text="Close", com=self.stop)
         close_button.pack(side="bottom", pady=(0,5))
 
         frame_value.grid_rowconfigure(1, minsize=50)
         frame_value.grid_columnconfigure(1, minsize=20)
 
         self.root = root
+        self.ser = ser
+        self.stop_flag = False
+        self.reset_flag1 = False
+        self.reset_flag2 = False
 
     def update(self):
         self.pos_var.set(str(self.pos))
@@ -127,22 +132,37 @@ class Window:
         if self.stop_flag:
             return True
         else:
+            if reset_flag1:
+                if com.isPathComplete(self.ser):
+                    self.reset_p1()
+                    reset_flag1 = False
+                    reset_flag2 = True
+            else if reset_flag2:
+                if com.isPathComplete(self.ser):
+                    self.reset_p2()
+                    reset_flag2 = False
             return False
 
     def zero(self, axis):
         print "Zero", axis
 
     def move(self, axis):
-        print "Moving", axis
+        if not reset_flag1 or reset_flag2:
+            com.velocityMode(axis, self.ser, vel, accel)
+        else:
+            print "Currently in reset mode"
 
     def stopMove(self, axis):
-        print "Stop", axis
+        com.velocityModeDisable(axis, self.ser)
+        self.reset_flag1 = False
+        self.reset_flag2 = False
 
     def returnHome(self):
         print "Returning Home"
 
     def reset(self):
-        print "Resetting"
+        com.zeroAll(ser, vel, accel)
+        self.reset_flag1 = True
 
     def setPosition(self, pos):
         self.pos = pos
@@ -161,13 +181,26 @@ class Window:
 
     def stop(self):
         self.stop_flag = True
+        self.reset_flag1 = False
+        self.reset_flag2 = False
 
-aa = (1000000, 1000000, 1000000)
-cc = 1
-gui = Window()
-while True:
-    # aa = (aa[0]+cc, aa[1]+cc, aa[2]+cc)
-    gui.setPosition(aa)
-    if gui.update():
-        break
-    time.sleep(0.1)
+    def reset_p1(self):
+        com.moveRelative(sisk.X, self.ser, 2000000, vel, accel)
+        com.moveRelative(sisk.Y, self.ser, 2000000, vel, accel)
+        com.moveRelative(sisk.Z, self.ser, 2000000, vel, accel)
+
+    def reset_p2(self):
+        com.setHome(sisk.X, self.ser)
+        com.setHome(sisk.Y, self.ser)
+        com.setHome(sisk.Z, self.ser)
+
+if __name__ == "__main__":
+    aa = (1000000, 1000000, 1000000)
+    cc = 1
+    gui = Window()
+    while True:
+        # aa = (aa[0]+cc, aa[1]+cc, aa[2]+cc)
+        gui.setPosition(aa)
+        if gui.update():
+            break
+        time.sleep(0.1)
