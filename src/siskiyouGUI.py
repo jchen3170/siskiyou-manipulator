@@ -5,7 +5,7 @@ import siskiyouCommands as com
 import siskiyouLibrary as sisk
 import time
 
-vel = 2000
+vel = 1000
 accel = 100
 class Window:
     def __init__(self, ser):
@@ -49,20 +49,22 @@ class Window:
         text5 = tk.Label(frame_text, text="Velocity: ", font=font)
         text5.pack(anchor="w", pady=pad_y)
 
-        self.pos = (0, 0, 0)
+
         self.pos_var = tk.StringVar()
-        self.pos_var.set(str(self.pos))
-        self.moving = (False, False, False)
         self.move_var = tk.StringVar()
-        self.move_var.set(str(self.moving))
-        self.status = (False, False, False)
+        self.lims_var = tk.StringVar()
         self.stat_var = tk.StringVar()
-        self.stat_var.set(str(self.status))
-        self.raw = ('0101000100001010', '0101000100001010', '0101000100001010')
-        self.raw_var = tk.StringVar()
-        self.raw_var.set(str(self.raw))
-        self.vel = (0, 0, 0)
         self.vel_var = tk.StringVar()
+
+        self.pos = (0, 0, 0)
+        self.pos_var.set(str(self.pos))
+        self.moving = ('', '', '')
+        self.move_var.set(str(self.moving))
+        self.lims = ('', '', '')
+        self.lims_var.set(str(self.lims))
+        self.raw_status = ('', '', '')
+        self.stat_var.set(str(self.raw_status))
+        self.vel = (0, 0, 0)
         self.vel_var.set(str(self.vel))
 
         xyz = tk.Label(frame_value, text="(X, Y, Z)", font=font)
@@ -71,50 +73,52 @@ class Window:
         position.pack(anchor="w", pady=pad_y)
         moving = tk.Label(frame_value, textvariable=self.move_var, font=font)
         moving.pack(anchor="w", pady=pad_y)
-        limits = tk.Label(frame_value, textvariable=self.stat_var, font=font)
+        limits = tk.Label(frame_value, textvariable=self.lims_var, font=font)
         limits.pack(anchor="w", pady=pad_y)
-        status = tk.Label(frame_value, textvariable=self.raw_var, font=font)
+        status = tk.Label(frame_value, textvariable=self.stat_var, font=font)
         status.pack(anchor="w", pady=pad_y)
         velocity = tk.Label(frame_value, textvariable=self.vel_var, font=font)
         velocity.pack(anchor="w", pady=pad_y)
 
         pad_x_button = 40
         zero_x = tk.Button(frame_buttons_top, text="Zero X", 
-            com= lambda: self.zero(sisk.X))
+            command= lambda: self.zero(sisk.X))
         zero_x.pack(side="left", padx=pad_x_button)
         zero_y = tk.Button(frame_buttons_top, text="Zero Y", 
-            com= lambda: self.zero(sisk.Y))
+            command= lambda: self.zero(sisk.Y))
         zero_y.pack(side="left", padx=pad_x_button)
         zero_z = tk.Button(frame_buttons_top, text="Zero Z", 
-            com= lambda: self.zero(sisk.Z))
+            command= lambda: self.zero(sisk.Z))
         zero_z.pack(side="left", padx=pad_x_button)
 
         move_x = tk.Button(frame_buttons_mid, text="Move X", 
-            com= lambda: self.move(sisk.X))
+            command= lambda: self.move(sisk.X))
         move_x.pack(side="left", padx=pad_x_button)
         move_y = tk.Button(frame_buttons_mid, text="Move Y", 
-            com= lambda: self.move(sisk.Y))
+            command= lambda: self.move(sisk.Y))
         move_y.pack(side="left", padx=pad_x_button)
         move_z = tk.Button(frame_buttons_mid, text="Move Z", 
-            com= lambda: self.move(sisk.Z))
+            command= lambda: self.move(sisk.Z))
         move_z.pack(side="left", padx=pad_x_button)
 
         stop_x = tk.Button(frame_buttons_bot, text="Stop X", 
-            com= lambda: self.stopMove(sisk.X))
+            command= lambda: self.stopMove(sisk.X))
         stop_x.pack(side="left", padx=pad_x_button)
         stop_y = tk.Button(frame_buttons_bot, text="Stop Y", 
-            com= lambda: self.stopMove(sisk.Y))
+            command= lambda: self.stopMove(sisk.Y))
         stop_y.pack(side="left", padx=pad_x_button)
         stop_z = tk.Button(frame_buttons_bot, text="Stop Z", 
-            com= lambda: self.stopMove(sisk.Z))
+            command= lambda: self.stopMove(sisk.Z))
         stop_z.pack(side="left", padx=pad_x_button)
 
-        home = tk.Button(container_adv, text="Return Home", com=self.returnHome)
+        home = tk.Button(container_adv, text="Return Home", command=self.returnHome)
         home.pack(side="left", padx=20)
-        reset = tk.Button(container_adv, text="Reset", com=self.reset)
+        reset = tk.Button(container_adv, text="Reset", command=self.reset)
         reset.pack(side="left", padx=45)
+        flush = tk.Button(container_adv, text="Flush", command=self.flush)
+        flush.pack(side="left", padx=10)
 
-        close_button = tk.Button(root, text="Close", com=self.stop)
+        close_button = tk.Button(root, text="Close", command=self.stop)
         close_button.pack(side="bottom", pady=(0,5))
 
         frame_value.grid_rowconfigure(1, minsize=50)
@@ -128,26 +132,29 @@ class Window:
 
     def update(self):
         self.pos_var.set(str(self.pos))
+        self.move_var.set(str(self.moving))
+        self.lims_var.set(str(self.lims))
+        self.stat_var.set(str(self.raw_status))
         self.root.update()
         if self.stop_flag:
             return True
         else:
-            if reset_flag1:
+            if self.reset_flag1:
                 if com.isPathComplete(self.ser):
                     self.reset_p1()
-                    reset_flag1 = False
-                    reset_flag2 = True
-            else if reset_flag2:
+                    self.reset_flag1 = False
+                    self.reset_flag2 = True
+            elif self.reset_flag2:
                 if com.isPathComplete(self.ser):
                     self.reset_p2()
-                    reset_flag2 = False
+                    self.reset_flag2 = False
             return False
 
     def zero(self, axis):
         print "Zero", axis
 
     def move(self, axis):
-        if not reset_flag1 or reset_flag2:
+        if not self.reset_flag1 or self.reset_flag2:
             com.velocityMode(axis, self.ser, vel, accel)
         else:
             print "Currently in reset mode"
@@ -161,8 +168,11 @@ class Window:
         print "Returning Home"
 
     def reset(self):
-        com.zeroAll(ser, vel, accel)
+        com.zeroAll(self.ser, vel, accel)
         self.reset_flag1 = True
+
+    def flush(self):
+        self.ser.flush()
 
     def setPosition(self, pos):
         self.pos = pos
@@ -171,10 +181,10 @@ class Window:
         self.moving = move
 
     def setLimits(self, lims):
-        self.limits = lims
+        self.lims = lims
 
     def setStatus(self, stat):
-        self.status = stat
+        self.raw_status = stat
 
     def start(self):
         self.root.mainloop()

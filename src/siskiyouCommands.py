@@ -4,7 +4,6 @@
 Command library to control and communicate with the manipulator
 '''
 import siskiyouSerial
-import time
 import siskiyouLibrary as sisk
 import siskiyouControls as controls
 
@@ -191,12 +190,12 @@ def isInPosition(status):
 
 def isPathComplete(ser):
     s = getStatusAll(ser)
-    moving = (command.isMoving(s[0]),
-              command.isMoving(s[1]),
-              command.isMoving(s[2]))
-    inpos = (command.isInPosition(s[0]),
-             command.isInPosition(s[1]),
-             command.isInPosition(s[2]))
+    moving = (isMoving(s[2][0]),
+              isMoving(s[2][1]),
+              isMoving(s[2][2]))
+    inpos = (isInPosition(s[2][0]),
+             isInPosition(s[2][1]),
+             isInPosition(s[2][2]))
     if '' not in s:
         if (True not in moving) and (False not in inpos):
             return True

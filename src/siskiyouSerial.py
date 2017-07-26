@@ -53,9 +53,9 @@ class SiskiyouSerial():
         s += "\r\n"
         out = self.ser.write(s)
         self.ser.flush()
-        time.sleep(0.025)
+        # time.sleep(0.025)
         self.read(out)
-        time.sleep(0.025)
+        # time.sleep(0.025)
         return out
 
     # writes multiple commands at once (ASSUMES NO OUTPUT BACK)
@@ -75,6 +75,11 @@ class SiskiyouSerial():
     def close(self):
         print ("Closing serial connection...")
         self.ser.close()
+
+    def flush(self):
+        t_end = time.time() + 5
+        while time.time() < t_end:
+            self.ser.read()
 
     # infinite read from port; for debugging purposes
     def inf_read(self):

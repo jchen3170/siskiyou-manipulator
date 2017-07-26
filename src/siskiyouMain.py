@@ -48,6 +48,8 @@ def main_loop(ser, gui):
         if rospy.is_shutdown() or flag:
             break
 
+        time.sleep(0.01)
+
 def callback(data):
     global display_flag
 
