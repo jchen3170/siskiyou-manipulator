@@ -7,6 +7,7 @@ Interfaces with and deals with all serial related code
 
 import time
 import serial
+import re
 
 class SiskiyouSerial():
 
@@ -14,7 +15,7 @@ class SiskiyouSerial():
     def __init__(self, port): 
         self.ser = serial.Serial(port)
         self.ser.baudrate = 38400
-        self.ser.timeout = 0.025
+        self.ser.timeout = 0.001
         if not self.ser.isOpen():
             self.ser.open()
         print (self.ser)
@@ -29,33 +30,20 @@ class SiskiyouSerial():
     # read from port
     def read(self, bits=None):
         if bits is None:
-            r = self.ser.read(2)
-            if (r == "\r\n"):
-                out = ''
-            else:
-                out = r
-            while True:
-                r = self.ser.read()
-                out += r
-                if (r == '\n'):
-                    break
-                elif (r == ''):
-                    # print "READ TIMEOUT"
-                    break
-            self.ser.flush()
-            return out.replace("\r\n", '')
+            s = self.ser.read(1024)
+            if s != '':
+                st = re.search(r"\\r\\n.*\\r\\n", repr(s))
+                if st:
+                    return st.group().replace("\\r\\n", '')
+            return s
         else:
-            self.ser.flush()
             return self.ser.read(bits)
 
     # writes input command
     def write(self, s):
         s += "\r\n"
         out = self.ser.write(s)
-        self.ser.flush()
-        # time.sleep(0.025)
         self.read(out)
-        # time.sleep(0.025)
         return out
 
     # writes multiple commands at once (ASSUMES NO OUTPUT BACK)
@@ -84,5 +72,5 @@ class SiskiyouSerial():
     # infinite read from port; for debugging purposes
     def inf_read(self):
         while True:
-            print repr(self.ser.read())
+            print repr(self.ser.readline())
             time.sleep(0.01)

@@ -104,4 +104,10 @@ if __name__ == "__main__":
 
     main_loop(ser, gui)
 
+    # ser.ser.write("2 en\r\n")
+    # ser.read()
+
+    # ser.write("2 st")
+    # print ser.read()
+
     ser.close()

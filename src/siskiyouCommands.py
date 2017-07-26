@@ -112,7 +112,7 @@ def getPosition(axis, ser):
         try:
             return hex2int(pos[1])
         except:
-            print "ERROR:", pos
+            print "POS_ERROR:", pos
             return ''
 
 def getPositionAll(ser):
@@ -140,7 +140,7 @@ def getStatus(axis, ser):
         try:
             return hex2bin(status[1])
         except:
-            print "ERROR:", status
+            print "STAT_ERROR:", status
             return ''
 
 def isMoving(status):
