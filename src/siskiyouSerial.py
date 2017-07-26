@@ -65,7 +65,7 @@ class SiskiyouSerial():
         self.ser.close()
 
     def flush(self):
-        t_end = time.time() + 5
+        t_end = time.time() + 2
         while time.time() < t_end:
             self.ser.read()
 

@@ -12,41 +12,41 @@ class Window:
         root = tk.Tk()
         root.title("Manipulator Status")
         root.resizable(width=False, height=False)
-        root.geometry("{}x{}".format(700,500))
+        root.geometry("{}x{}".format(1200,700))
 
         font = ("TkDefaultFont",12)
         pad_y = 5
 
         container = tk.Frame(root)
-        container.pack(anchor="w")
         container2 = tk.Frame(root)
-        container2.pack()
         container_adv = tk.Frame(root)
-        container_adv.pack(pady=(20,0))
+        container.pack(anchor="w")
+        container2.pack(anchor="w")
+        container_adv.pack(anchor="w",pady=(10,0))
 
-        spacing_y = 10
+        spacing_y = 5
         frame_text = tk.Frame(container)
-        frame_text.pack(side="left",fill="y",pady=(0,spacing_y))
         frame_value = tk.Frame(container)
-        frame_value.pack(side="left",fill="y",pady=(0,spacing_y))
         frame_buttons_top = tk.Frame(container2)
-        frame_buttons_top.pack(pady=spacing_y)
         frame_buttons_mid = tk.Frame(container2)
-        frame_buttons_mid.pack(pady=spacing_y)
         frame_buttons_bot = tk.Frame(container2)
-        frame_buttons_bot.pack(pady=spacing_y)
+        frame_text.pack(side="left",fill="y",pady=(0,spacing_y))
+        frame_value.pack(side="left",fill="y",pady=(0,spacing_y))
+        frame_buttons_top.pack(anchor="w", pady=spacing_y)
+        frame_buttons_mid.pack(anchor="w", pady=spacing_y)
+        frame_buttons_bot.pack(anchor="w", pady=spacing_y)
 
         text = tk.Label(frame_text, text= "", font=font)
-        text.pack(anchor="w", pady=pad_y)
         text1 = tk.Label(frame_text, text="Position: ", font=font)
-        text1.pack(anchor="w", pady=pad_y)
         text2 = tk.Label(frame_text, text="Moving: ", font=font)
-        text2.pack(anchor="w", pady=pad_y)
         text3 = tk.Label(frame_text, text="Limits: ", font=font)
-        text3.pack(anchor="w", pady=pad_y)
         text4 = tk.Label(frame_text, text="Status: ", font=font)
-        text4.pack(anchor="w", pady=pad_y)
         text5 = tk.Label(frame_text, text="Velocity: ", font=font)
+        text.pack(anchor="w", pady=pad_y)
+        text1.pack(anchor="w", pady=pad_y)
+        text2.pack(anchor="w", pady=pad_y)
+        text3.pack(anchor="w", pady=pad_y)
+        text4.pack(anchor="w", pady=pad_y)
         text5.pack(anchor="w", pady=pad_y)
 
 
@@ -68,61 +68,66 @@ class Window:
         self.vel_var.set(str(self.vel))
 
         xyz = tk.Label(frame_value, text="(X, Y, Z)", font=font)
-        xyz.pack(anchor="w", pady=pad_y)
         position = tk.Label(frame_value, textvariable=self.pos_var, font=font)
-        position.pack(anchor="w", pady=pad_y)
         moving = tk.Label(frame_value, textvariable=self.move_var, font=font)
-        moving.pack(anchor="w", pady=pad_y)
         limits = tk.Label(frame_value, textvariable=self.lims_var, font=font)
-        limits.pack(anchor="w", pady=pad_y)
         status = tk.Label(frame_value, textvariable=self.stat_var, font=font)
-        status.pack(anchor="w", pady=pad_y)
         velocity = tk.Label(frame_value, textvariable=self.vel_var, font=font)
+        xyz.pack(anchor="w", pady=pad_y)
+        position.pack(anchor="w", pady=pad_y)
+        moving.pack(anchor="w", pady=pad_y)
+        limits.pack(anchor="w", pady=pad_y)
+        status.pack(anchor="w", pady=pad_y)
         velocity.pack(anchor="w", pady=pad_y)
 
-        pad_x_button = 40
+        pad_x_button = 10
         zero_x = tk.Button(frame_buttons_top, text="Zero X", 
-            command= lambda: self.zero(sisk.X))
-        zero_x.pack(side="left", padx=pad_x_button)
+            command= lambda: self.zero(sisk.X))      
         zero_y = tk.Button(frame_buttons_top, text="Zero Y", 
-            command= lambda: self.zero(sisk.Y))
-        zero_y.pack(side="left", padx=pad_x_button)
+            command= lambda: self.zero(sisk.Y))       
         zero_z = tk.Button(frame_buttons_top, text="Zero Z", 
-            command= lambda: self.zero(sisk.Z))
+            command= lambda: self.zero(sisk.Z))        
+        zero_all = tk.Button(frame_buttons_top, text="Zero ALL",
+            command= lambda: self.zeroAll())
+        zero_x.pack(side="left", padx=(5,pad_x_button))
+        zero_y.pack(side="left", padx=pad_x_button)
         zero_z.pack(side="left", padx=pad_x_button)
+        zero_all.pack(side="left", padx=pad_x_button)
 
+        aa = 2
         move_x = tk.Button(frame_buttons_mid, text="Move X", 
             command= lambda: self.move(sisk.X))
-        move_x.pack(side="left", padx=pad_x_button)
         move_y = tk.Button(frame_buttons_mid, text="Move Y", 
             command= lambda: self.move(sisk.Y))
-        move_y.pack(side="left", padx=pad_x_button)
         move_z = tk.Button(frame_buttons_mid, text="Move Z", 
             command= lambda: self.move(sisk.Z))
-        move_z.pack(side="left", padx=pad_x_button)
+        home = tk.Button(frame_buttons_mid, text="Home", 
+            command=self.returnHome)
+        move_x.pack(side="left", padx=(3,pad_x_button-aa))
+        move_y.pack(side="left", padx=pad_x_button-aa)
+        move_z.pack(side="left", padx=pad_x_button-aa)
+        home.pack(side="left", padx=pad_x_button+10)
 
         stop_x = tk.Button(frame_buttons_bot, text="Stop X", 
             command= lambda: self.stopMove(sisk.X))
-        stop_x.pack(side="left", padx=pad_x_button)
         stop_y = tk.Button(frame_buttons_bot, text="Stop Y", 
             command= lambda: self.stopMove(sisk.Y))
-        stop_y.pack(side="left", padx=pad_x_button)
         stop_z = tk.Button(frame_buttons_bot, text="Stop Z", 
             command= lambda: self.stopMove(sisk.Z))
+        stop_all = tk.Button(frame_buttons_bot, text="Stop ALL",
+            command= lambda: self.stopAll())
+        stop_x.pack(side="left", padx=(5,pad_x_button))
+        stop_y.pack(side="left", padx=pad_x_button)
         stop_z.pack(side="left", padx=pad_x_button)
+        stop_all.pack(side="left", padx=pad_x_button)
 
-        home = tk.Button(container_adv, text="Return Home", command=self.returnHome)
-        home.pack(side="left", padx=20)
         reset = tk.Button(container_adv, text="Reset", command=self.reset)
-        reset.pack(side="left", padx=45)
         flush = tk.Button(container_adv, text="Flush", command=self.flush)
-        flush.pack(side="left", padx=10)
+        reset.pack(side="left")
+        flush.pack(side="left", padx=30)
 
         close_button = tk.Button(root, text="Close", command=self.stop)
         close_button.pack(side="bottom", pady=(0,5))
-
-        frame_value.grid_rowconfigure(1, minsize=50)
-        frame_value.grid_columnconfigure(1, minsize=20)
 
         self.root = root
         self.ser = ser
@@ -151,7 +156,12 @@ class Window:
             return False
 
     def zero(self, axis):
-        print "Zero", axis
+        com.setHome(axis, self.ser)
+
+    def zeroAll(self):
+        self.zero(sisk.X)
+        self.zero(sisk.Y)
+        self.zero(sisk.Z)
 
     def move(self, axis):
         if not self.reset_flag1 or self.reset_flag2:
@@ -164,8 +174,15 @@ class Window:
         self.reset_flag1 = False
         self.reset_flag2 = False
 
+    def stopAll(self):
+        self.stopMove(sisk.X)
+        self.stopMove(sisk.Y)
+        self.stopMove(sisk.Z)
+
     def returnHome(self):
-        print "Returning Home"
+        com.returnHome(sisk.X, self.ser, vel, accel)
+        com.returnHome(sisk.Y, self.ser, vel, accel)
+        com.returnHome(sisk.Z, self.ser, vel, accel)
 
     def reset(self):
         com.zeroAll(self.ser, vel, accel)
