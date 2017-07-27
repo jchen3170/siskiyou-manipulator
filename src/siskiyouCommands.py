@@ -88,10 +88,8 @@ def velocityMode(axis, ser, amt, ac):
     s_list = [str1, str2, str3]
     ser.write_multiple(s_list)
 
-def velocityModeDisable(axis, ser):
-    ac = 100
-    sp = 2000
-    moveRelative(axis, ser, 0, sp, ac)
+def velocityModeDisable(axis, ser, sp, ac):
+    moveRelative(axis, ser, sp*12, sp, ac)
 
 # gets position of selected axis
 # inputs:
@@ -120,6 +118,10 @@ def getPositionAll(ser):
     y = getPosition(sisk.Y, ser)
     z = getPosition(sisk.Z, ser)
     return (x,y,z)
+
+def resetAxis(axis, ser):
+    st = axis + sisk.RESET
+    return ser.write(st)
 
 # gets status of selected axis
 # inputs:

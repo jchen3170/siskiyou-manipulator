@@ -21,6 +21,7 @@ import siskiyouGUI
 # import siskiyouGetPort as port
 
 display_flag = False
+image = np.zeros((300,300,3), np.uint8)
 def main_loop(ser, gui):
     # cv2.namedWindow("figure")
     # cv2.namedWindow("figure2")
@@ -43,6 +44,7 @@ def main_loop(ser, gui):
         gui.setMoving(mov)
         gui.setLimits(lims)
         gui.setStatus(status)
+        # gui.setImage()
         flag = gui.update()
 
         if rospy.is_shutdown() or flag:

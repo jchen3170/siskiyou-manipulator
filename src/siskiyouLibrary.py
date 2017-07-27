@@ -23,5 +23,6 @@ ACCEL = "ac"
 DECEL = "dc"
 VELOCITY_MODE = "v"
 ABORT_MOTION = "ab"
+RESET = "rn"
 
 ENCODER_MAX = 4200000

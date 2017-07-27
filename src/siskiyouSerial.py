@@ -15,7 +15,7 @@ class SiskiyouSerial():
     def __init__(self, port): 
         self.ser = serial.Serial(port)
         self.ser.baudrate = 38400
-        self.ser.timeout = 0.001
+        self.ser.timeout = 0.01
         if not self.ser.isOpen():
             self.ser.open()
         print (self.ser)
