@@ -15,17 +15,17 @@ class Window:
         root = tk.Tk()
         root.title("Manipulator Status")
         root.resizable(width=False, height=False)
-        root.geometry("{}x{}".format(1400,700))
+        root.geometry("{}x{}".format(1300,700))
 
         font = ("TkDefaultFont",12)
         pad_y = 5
 
-        root_left = tk.Frame(root, bg='green')
+        root_left = tk.Frame(root, bg='green', width=515)
         root_right = tk.Frame(root, bg='red')
         root_bot = tk.Frame(root, bg='blue')
-        root_bot.pack(side="bottom", fill='x', pady=(0,10))
+        root_bot.pack(side="bottom", fill='x', pady=(0,5))
         root_left.pack(side="left", fill='y')
-        root_right.pack(fill='both')
+        root_right.pack(fill='x')
         
         container = tk.Frame(root_left)
         container2 = tk.Frame(root_left)
@@ -33,11 +33,13 @@ class Window:
         container_move2 = tk.Frame(container_move)
         container_adv = tk.Frame(root_left)
         image_frame = tk.Frame(root_right)
+        image_frame_buttons = tk.Frame(image_frame)
         container.pack(anchor="w")
         container2.pack(anchor="w", pady=(25,0))
         container_adv.pack(anchor="w",pady=(50,0))
         container_move2.pack(side="left")
         image_frame.pack()
+        image_frame_buttons.pack(side="bottom")
 
         spacing_y = 5
         frame_text = tk.Frame(container)
@@ -162,13 +164,24 @@ class Window:
         self.image = imgTk
         image_label = tk.Label(image_frame, image=self.image)
         image_label.pack(anchor="e")
+        image_label.bind("<ButtonPress-1>", self.imagePoint)
+        image_pt_undo = tk.Button(image_frame_buttons, text="Undo", 
+            command=self.undoImagePoint)
+        image_pt_undo.pack(side="left", padx=25, pady=(15,0))
+        image_pt_reset = tk.Button(image_frame_buttons, text="Reset",
+            command=self.resetImagePoints)
+        image_pt_reset.pack(side="left", padx=25, pady=(15,0))
+
 
         close_button = tk.Button(root_bot, text="Close", command=self.stop)
         close_button.pack()
 
+        root_left.pack_propagate(0)
+
         self.root = root
         self.ser = ser
         self.image_label = image_label
+        self.image_points = []
         self.stop_flag = False
         self.reset_flag1 = False
         self.reset_flag2 = False
@@ -292,6 +305,21 @@ class Window:
         img = Image.fromarray(img)
         img = ImageTk.PhotoImage(img)
         self.image = img
+
+    def imagePoint(self,event):
+        x = event.x
+        y = event.y
+        self.image_points.append((x,y))
+
+    def getImagePoints(self):
+        return self.image_points
+
+    def undoImagePoint(self):
+        if self.image_points:
+            del(self.image_points[-1])
+
+    def resetImagePoints(self):
+        del self.image_points[:]
         
 
 if __name__ == "__main__":

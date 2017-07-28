@@ -20,16 +20,10 @@ import siskiyouVision as vision
 import siskiyouGUI
 # import siskiyouGetPort as port
 
-display_flag = False
-image = np.zeros((300,300,3), np.uint8)
+image = np.zeros((480,760,3), np.uint8)
 def main_loop(ser, gui):
-    # cv2.namedWindow("figure")
-    # cv2.namedWindow("figure2")
-    # cv2.namedWindow("figure3")
-    # cv2.namedWindow("figure4")
-    # rospy.init_node("siskiyouMain", anonymous=False)
-    # rospy.Subscriber("/camera/image_raw", Image, callback, queue_size=10)
-    # rospy.spin()
+    rospy.init_node("siskiyouMain", anonymous=False)
+    rospy.Subscriber("/camera/image_raw", Image, callback, queue_size=10)
 
     pos = (0,0,0)
     mov = (False,False,False)
@@ -44,16 +38,18 @@ def main_loop(ser, gui):
         gui.setMoving(mov)
         gui.setLimits(lims)
         gui.setStatus(status)
-        # gui.setImage()
+        for pt in gui.getImagePoints():
+            cv2.circle(image, pt, 2, (0,200,0), -1)
+        gui.setImage(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         flag = gui.update()
 
         if rospy.is_shutdown() or flag:
             break
 
-        time.sleep(0.01)
+        time.sleep(0.001)
 
 def callback(data):
-    global display_flag
+    global image
 
     frame = bridge.imgmsg_to_cv2(data, "bgr8")
 
@@ -76,23 +72,7 @@ def callback(data):
         cv2.circle(frame, corner, 2, (255,255,255), -1)
         cv2.circle(overlay, corner, 2, (255,255,255), -1)
 
-    cv2.imshow("figure", frame)
-    cv2.imshow("figure2", overlay)
-    cv2.imshow("figure3", mask)
-    cv2.imshow("figure4", cnt_mask)
-
-    if not display_flag:
-        offset_w = 80
-        offset_h = 50
-        offset_bar = 29
-        v_h, v_w, _ = frame.shape
-        cv2.moveWindow("figure", offset_w, offset_h)
-        cv2.moveWindow("figure2", offset_w+v_w+1, offset_h)
-        cv2.moveWindow("figure3", offset_w, offset_h+v_h+offset_bar)
-        cv2.moveWindow("figure4", offset_w+v_w+1, offset_h+v_h+offset_bar)
-        display_flag = True
-
-    cv2.waitKey(1)
+    image = cv2.resize(frame, (0,0), fx=0.75, fy=0.75)
 
 if __name__ == "__main__":
     port = "/dev/ttyUSB0"
@@ -105,11 +85,5 @@ if __name__ == "__main__":
     gui = siskiyouGUI.Window(ser)
 
     main_loop(ser, gui)
-
-    # ser.ser.write("2 en\r\n")
-    # ser.read()
-
-    # ser.write("2 st")
-    # print ser.read()
 
     ser.close()
