@@ -87,6 +87,13 @@ def movePipette(gui):
         cv2.circle(image, pt, 2, (0,200,0), -1)
     if pt_stack:
         cv2.line(image, global_corner, pt_stack[0], (0,200,0))
+        if gui.getMoveFlag():
+            print (pt_stack[0][0]-global_corner[0], 
+                pt_stack[0][1]-global_corner[1])
+    else:
+        if gui.getMoveFlag():
+            gui.setMoveFlag(False)
+
 
 if __name__ == "__main__":
     port = "/dev/ttyUSB0"

@@ -166,7 +166,7 @@ class Window:
         image_label.pack(anchor="e")
         image_label.bind("<ButtonPress-1>", self.imagePoint)
         image_move = tk.Button(image_frame_buttons, text="Move",
-            command=self.moveToPoint)
+            command= lambda: self.setMoveFlag(True))
         image_pt_undo = tk.Button(image_frame_buttons, text="Undo", 
             command=self.undoImagePoint)
         image_pt_reset = tk.Button(image_frame_buttons, text="Reset",
@@ -187,6 +187,7 @@ class Window:
         self.stop_flag = False
         self.reset_flag1 = False
         self.reset_flag2 = False
+        self.move_flag = False
 
     def update(self):
         self.pos_var.set(str(self.pos))
@@ -234,6 +235,7 @@ class Window:
         self.setVelocity(axis, 0)
         self.reset_flag1 = False
         self.reset_flag2 = False
+        self.move_flag = False
 
     def stopAll(self):
         self.stopMove(sisk.X)
@@ -319,16 +321,22 @@ class Window:
     def undoImagePoint(self):
         if self.image_points:
             del(self.image_points[-1])
+            if not self.image_points:
+                self.move_flag = False
 
     def resetImagePoints(self):
         del self.image_points[:]
+        self.move_flag = False
 
     def removeFirstImagePoint(self):
         if self.image_points:
             del self.image_points[0]
     
-    def moveToPoint(self):
-        print "a"
+    def setMoveFlag(self, flag):
+        self.move_flag = flag
+
+    def getMoveFlag(self):
+        return self.move_flag
 
 if __name__ == "__main__":
     aa = (1000000, 1000000, 1000000)
