@@ -21,7 +21,9 @@ import siskiyouGUI
 # import siskiyouGetPort as port
 
 image = np.zeros((480,760,3), np.uint8)
+global_corner = (0,0)
 def main_loop(ser, gui):
+    global image
     rospy.init_node("siskiyouMain", anonymous=False)
     rospy.Subscriber("/camera/image_raw", Image, callback, queue_size=10)
 
@@ -38,8 +40,8 @@ def main_loop(ser, gui):
         gui.setMoving(mov)
         gui.setLimits(lims)
         gui.setStatus(status)
-        for pt in gui.getImagePoints():
-            cv2.circle(image, pt, 2, (0,200,0), -1)
+        movePipette(gui)
+        # image = cv2.resize(image, (0,0), fx=0.75, fy=0.75)
         gui.setImage(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         flag = gui.update()
 
@@ -50,6 +52,7 @@ def main_loop(ser, gui):
 
 def callback(data):
     global image
+    global global_corner
 
     frame = bridge.imgmsg_to_cv2(data, "bgr8")
 
@@ -71,8 +74,19 @@ def callback(data):
     if corner is not None:
         cv2.circle(frame, corner, 2, (255,255,255), -1)
         cv2.circle(overlay, corner, 2, (255,255,255), -1)
+        global_corner = corner
 
-    image = cv2.resize(frame, (0,0), fx=0.75, fy=0.75)
+    image = frame
+
+def movePipette(gui):
+    global image
+    global global_corner
+
+    pt_stack = gui.getImagePoints()
+    for pt in pt_stack:
+        cv2.circle(image, pt, 2, (0,200,0), -1)
+    if pt_stack:
+        cv2.line(image, global_corner, pt_stack[0], (0,200,0))
 
 if __name__ == "__main__":
     port = "/dev/ttyUSB0"

@@ -20,9 +20,9 @@ class Window:
         font = ("TkDefaultFont",12)
         pad_y = 5
 
-        root_left = tk.Frame(root, bg='green', width=515)
-        root_right = tk.Frame(root, bg='red')
-        root_bot = tk.Frame(root, bg='blue')
+        root_left = tk.Frame(root, width=515)
+        root_right = tk.Frame(root)
+        root_bot = tk.Frame(root)
         root_bot.pack(side="bottom", fill='x', pady=(0,5))
         root_left.pack(side="left", fill='y')
         root_right.pack(fill='x')
@@ -165,13 +165,15 @@ class Window:
         image_label = tk.Label(image_frame, image=self.image)
         image_label.pack(anchor="e")
         image_label.bind("<ButtonPress-1>", self.imagePoint)
+        image_move = tk.Button(image_frame_buttons, text="Move",
+            command=self.moveToPoint)
         image_pt_undo = tk.Button(image_frame_buttons, text="Undo", 
             command=self.undoImagePoint)
-        image_pt_undo.pack(side="left", padx=25, pady=(15,0))
         image_pt_reset = tk.Button(image_frame_buttons, text="Reset",
             command=self.resetImagePoints)
+        image_move.pack(side="left", padx=25, pady=(15,0))
+        image_pt_undo.pack(side="left", padx=25, pady=(15,0))
         image_pt_reset.pack(side="left", padx=25, pady=(15,0))
-
 
         close_button = tk.Button(root_bot, text="Close", command=self.stop)
         close_button.pack()
@@ -320,7 +322,13 @@ class Window:
 
     def resetImagePoints(self):
         del self.image_points[:]
-        
+
+    def removeFirstImagePoint(self):
+        if self.image_points:
+            del self.image_points[0]
+    
+    def moveToPoint(self):
+        print "a"
 
 if __name__ == "__main__":
     aa = (1000000, 1000000, 1000000)
