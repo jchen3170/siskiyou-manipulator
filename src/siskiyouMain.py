@@ -3,7 +3,7 @@
 '''
 Main script for interfacing/communicating with the Siskiyou Design 
 Micromanipulator (Series MX7000). 
-Assumes R232->USB and 25pin->USB
+Assumes R232->USB
 
 '''
 import time
@@ -88,6 +88,7 @@ def movePipette(gui):
     if pt_stack:
         cv2.line(image, global_corner, pt_stack[0], (0,200,0))
         if gui.getMoveFlag():
+            # scale velocity values based on distance
             print (pt_stack[0][0]-global_corner[0], 
                 pt_stack[0][1]-global_corner[1])
     else:

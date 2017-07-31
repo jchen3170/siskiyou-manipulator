@@ -11,6 +11,7 @@ import numpy as np
 sp = 500
 ac = 25
 class Window:
+    # initialize GUI components on class creation
     def __init__(self, ser):
         root = tk.Tk()
         root.title("Manipulator Status")
@@ -20,33 +21,33 @@ class Window:
         font = ("TkDefaultFont",12)
         pad_y = 5
 
-        root_left = tk.Frame(root, width=515)
+        root_left = tk.Frame(root, width=510)
         root_right = tk.Frame(root)
         root_bot = tk.Frame(root)
         root_bot.pack(side="bottom", fill='x', pady=(0,5))
         root_left.pack(side="left", fill='y')
         root_right.pack(fill='x')
         
-        container = tk.Frame(root_left)
-        container2 = tk.Frame(root_left)
-        container_move = tk.Frame(container2)
+        container_values = tk.Frame(root_left)
+        container_buttons = tk.Frame(root_left)
+        container_move = tk.Frame(container_buttons)
         container_move2 = tk.Frame(container_move)
         container_adv = tk.Frame(root_left)
         image_frame = tk.Frame(root_right)
         image_frame_buttons = tk.Frame(image_frame)
-        container.pack(anchor="w")
-        container2.pack(anchor="w", pady=(25,0))
-        container_adv.pack(anchor="w",pady=(50,0))
+        container_values.pack(anchor='w')
+        container_buttons.pack(pady=(25,0))
+        container_adv.pack(pady=(50,0))
         container_move2.pack(side="left")
         image_frame.pack()
         image_frame_buttons.pack(side="bottom")
 
         spacing_y = 5
-        frame_text = tk.Frame(container)
-        frame_value = tk.Frame(container)
-        frame_buttons_top = tk.Frame(container2)
+        frame_text = tk.Frame(container_values)
+        frame_value = tk.Frame(container_values)
+        frame_buttons_top = tk.Frame(container_buttons)
         frame_buttons_mid = tk.Frame(container_move2)
-        frame_buttons_bot = tk.Frame(container2)
+        frame_buttons_bot = tk.Frame(container_buttons)
         frame_buttons_mid2 = tk.Frame(container_move2)
         frame_text.pack(side="left",fill="y",pady=(0,spacing_y))
         frame_value.pack(side="left",fill="y",pady=(0,spacing_y))
@@ -189,6 +190,7 @@ class Window:
         self.reset_flag2 = False
         self.move_flag = False
 
+    # update GUI variables
     def update(self):
         self.pos_var.set(str(self.pos))
         self.move_var.set(str(self.moving))
@@ -197,6 +199,7 @@ class Window:
         self.vel_var.set(str(self.vel))
         self.image_label.configure(image=self.image)
         self.root.update()
+        # handle the stages of the reset/calibration function
         if self.stop_flag:
             return True
         else:
@@ -211,14 +214,17 @@ class Window:
                     self.reset_flag2 = False
             return False
 
+    # zero the specified axis
     def zero(self, axis):
         com.setHome(axis, self.ser)
 
+    # zero all axis
     def zeroAll(self):
         self.zero(sisk.X)
         self.zero(sisk.Y)
         self.zero(sisk.Z)
 
+    # move specified axis in the specified direction
     def move(self, axis, dir):
         if not self.reset_flag1 or self.reset_flag2:
             if dir:
@@ -230,6 +236,7 @@ class Window:
         else:
             print "Currently in reset mode"
 
+    # stop specified axis
     def stopMove(self, axis):
         com.velocityModeDisable(axis, self.ser, self.getVelocity(axis), ac)
         self.setVelocity(axis, 0)
@@ -237,58 +244,72 @@ class Window:
         self.reset_flag2 = False
         self.move_flag = False
 
+    # stop all axis
     def stopAll(self):
         self.stopMove(sisk.X)
         self.stopMove(sisk.Y)
         self.stopMove(sisk.Z)
 
+    # return all axis to Home position
     def returnHome(self):
         com.returnHome(sisk.X, self.ser, sp, ac)
         com.returnHome(sisk.Y, self.ser, sp, ac)
         com.returnHome(sisk.Z, self.ser, sp, ac)
 
+    # initiate reset/calibration
     def default(self):
         com.zeroAll(self.ser, sp, ac)
         self.reset_flag1 = True
 
+    # flush controller output to try to fix communication problems
     def flush(self):
         self.ser.flush()
 
+    # reset controller unit (software reset/power cycle)
     def reset(self):
         com.resetAxis(sisk.X, self.ser)
         com.resetAxis(sisk.Y, self.ser)
         com.resetAxis(sisk.Z, self.ser)
 
+    # update internal position variable
     def setPosition(self, pos):
         self.pos = pos
 
+    # update internal moving variable
     def setMoving(self, move):
         self.moving = move
 
+    # update internal limits variable
     def setLimits(self, lims):
         self.lims = lims
 
+    # update internal status variable
     def setStatus(self, stat):
         self.raw_status = stat
 
+    # built-in self update (not recommended)
     def start(self):
         self.root.mainloop()
 
+    # stop function that indicates close button has been hit
     def stop(self):
         self.stop_flag = True
         self.reset_flag1 = False
         self.reset_flag2 = False
 
+    # part 1 of calibration: move to set position after hitting limits
     def reset_p1(self):
         com.moveRelative(sisk.X, self.ser, 2000000, sp, ac)
         com.moveRelative(sisk.Y, self.ser, 2000000, sp, ac)
         com.moveRelative(sisk.Z, self.ser, 2000000, sp, ac)
 
+    # part 2 of calibration: zero all axis
     def reset_p2(self):
         com.setHome(sisk.X, self.ser)
         com.setHome(sisk.Y, self.ser)
         com.setHome(sisk.Z, self.ser)
 
+    # get the current set velocity of specified axis
     def getVelocity(self, axis):
         if axis is sisk.X:
             return self.vel[0]
@@ -297,6 +318,7 @@ class Window:
         else:
             return self.vel[2]
 
+    # set velocity of input axis by the axis amt value
     def setVelocity(self, axis, amt):
         if axis is sisk.X:
             self.vel = (amt, self.vel[1], self.vel[2])
@@ -305,39 +327,48 @@ class Window:
         else:
             self.vel = (self.vel[0], self.vel[1], amt)
 
+    # set the image currently on display
     def setImage(self, img):
         img = Image.fromarray(img)
         img = ImageTk.PhotoImage(img)
         self.image = img
 
+    # get and save the coordinates of the click on the image (relative to image)
     def imagePoint(self,event):
         x = event.x
         y = event.y
         self.image_points.append((x,y))
 
+    # return all saved image click coordinates
     def getImagePoints(self):
         return self.image_points
 
+    # undo most recent image click point
     def undoImagePoint(self):
         if self.image_points:
             del(self.image_points[-1])
             if not self.image_points:
                 self.move_flag = False
 
+    # remove all image click points
     def resetImagePoints(self):
         del self.image_points[:]
         self.move_flag = False
 
+    # remove the first image click point
     def removeFirstImagePoint(self):
         if self.image_points:
             del self.image_points[0]
     
+    # begin movement towards first image point
     def setMoveFlag(self, flag):
         self.move_flag = flag
 
+    # change status of movement towards image point
     def getMoveFlag(self):
         return self.move_flag
 
+# test code for when executing the class directly
 if __name__ == "__main__":
     aa = (1000000, 1000000, 1000000)
     cc = 1
