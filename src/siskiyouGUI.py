@@ -161,12 +161,13 @@ class Window:
         stop_z.pack(side="left", padx=pad_x_button)
         stop_all.pack(side="left", padx=pad_x_button)
 
-        default = tk.Button(container_adv, text="Default", command=self.default)
+        calib = tk.Button(container_adv, text="Calibration", command=self.default)
         flush = tk.Button(container_adv, text="Flush", command=self.flush)
-        reset = tk.Button(container_adv, text="RESET", command=self.reset)
-        default.pack(side="left")
-        flush.pack(side="left", padx=30)
-        reset.pack(side="left")
+        power_cycle = tk.Button(container_adv, text="POWER CYCLE", 
+            command=self.pcycle)
+        calib.pack(side="left")
+        flush.pack(side="left", padx=100)
+        power_cycle.pack(side="left")
 
         vcmd = (root.register(self.entryValid),
                 '%d', '%i', '%P', '%s', '%S')
@@ -302,7 +303,7 @@ class Window:
         self.ser.flush()
 
     # reset controller unit (software reset/power cycle)
-    def reset(self):
+    def pcycle(self):
         com.resetAxis(sisk.X, self.ser)
         com.resetAxis(sisk.Y, self.ser)
         com.resetAxis(sisk.Z, self.ser)
@@ -419,7 +420,13 @@ class Window:
             return text.isdigit()
 
     def fixedMove(self, axis, val):
-        com.moveRelative(axis, self.ser, val.get(), sp, ac)
+        amt = val.get()
+        try:
+            int(amt)
+            com.moveRelative(axis, self.ser, amt, sp, ac)
+            return True
+        except ValueError:
+            return False
 
 # test code for when executing the class directly
 if __name__ == "__main__":
