@@ -39,7 +39,7 @@ class Window:
         container_values.pack(anchor='w')
         container_buttons.pack(pady=(25,0))
         container_move2.pack(side="left")
-        container_fix_move.pack(pady=(25,0))
+        container_fix_move.pack(pady=(50,0))
         container_adv.pack(pady=(50,0))
         image_frame.pack()
         image_frame_buttons.pack(side="bottom")
@@ -169,7 +169,7 @@ class Window:
         reset.pack(side="left")
 
         vcmd = (root.register(self.entryValid),
-                '%d', '%P', '%s', '%S')
+                '%d', '%i', '%P', '%s', '%S')
         entry_x_val = tk.StringVar()
         entry_y_val = tk.StringVar()
         entry_z_val = tk.StringVar()
@@ -192,9 +192,9 @@ class Window:
             command = lambda: self.fixedMove(sisk.Y,self.entry_y_val))
         entry_z_button = tk.Button(frame_entry_z, text="Move X", 
             command = lambda: self.fixedMove(sisk.Z,self.entry_z_val))
-        entry_x_button.pack()
-        entry_y_button.pack()
-        entry_z_button.pack()
+        entry_x_button.pack(pady=(10,0))
+        entry_y_button.pack(pady=(10,0))
+        entry_z_button.pack(pady=(10,0))
 
         img = Image.fromarray(np.ones([500,800]))
         imgTk = ImageTk.PhotoImage(img)
@@ -404,18 +404,22 @@ class Window:
     def getMoveFlag(self):
         return self.move_flag
 
-    def entryValid(self, d, P, s, text):
+    # checks to make sure entered value into entry widget is numerical
+    def entryValid(self, d, i, P, s, text):
+        # always allow deletes
         if d == 0:
             return True
-        if len(s) != 0:
-            if len(P.replace('-','')) > 7:
-                return False
-            return text.isdigit()
-        else:
+        # make sure number value never exceeds 7 digits
+        if len(P.replace('-','')) > 7:
+            return False
+        # allow for insertion of neg. sign at beginning
+        if i == '0':
             return text.isdigit() or text == '-'
+        else:
+            return text.isdigit()
 
     def fixedMove(self, axis, val):
-        com.moveRelative(axis, self.ser, val, sp, ac)
+        com.moveRelative(axis, self.ser, val.get(), sp, ac)
 
 # test code for when executing the class directly
 if __name__ == "__main__":
