@@ -33,12 +33,14 @@ class Window:
         container_move = tk.Frame(container_buttons)
         container_move2 = tk.Frame(container_move)
         container_adv = tk.Frame(root_left)
+        container_fix_move = tk.Frame(root_left)
         image_frame = tk.Frame(root_right)
         image_frame_buttons = tk.Frame(image_frame)
         container_values.pack(anchor='w')
         container_buttons.pack(pady=(25,0))
-        container_adv.pack(pady=(50,0))
         container_move2.pack(side="left")
+        container_fix_move.pack(pady=(25,0))
+        container_adv.pack(pady=(50,0))
         image_frame.pack()
         image_frame_buttons.pack(side="bottom")
 
@@ -49,6 +51,9 @@ class Window:
         frame_buttons_mid = tk.Frame(container_move2)
         frame_buttons_bot = tk.Frame(container_buttons)
         frame_buttons_mid2 = tk.Frame(container_move2)
+        frame_entry_x = tk.Frame(container_fix_move)
+        frame_entry_y = tk.Frame(container_fix_move)
+        frame_entry_z = tk.Frame(container_fix_move)
         frame_text.pack(side="left",fill="y",pady=(0,spacing_y))
         frame_value.pack(side="left",fill="y",pady=(0,spacing_y))
         frame_buttons_top.pack(anchor="w", pady=spacing_y)
@@ -56,6 +61,9 @@ class Window:
         frame_buttons_mid2.pack(side="bottom", anchor="w", pady=spacing_y)
         container_move.pack(anchor="w")
         frame_buttons_bot.pack(anchor="w", pady=spacing_y)
+        frame_entry_x.pack(side="left", padx=25)
+        frame_entry_y.pack(side="left", padx=25)
+        frame_entry_z.pack(side="left", padx=25)
 
         text = tk.Label(frame_text, text= "", font=font)
         text1 = tk.Label(frame_text, text="Position: ", font=font)
@@ -159,6 +167,34 @@ class Window:
         default.pack(side="left")
         flush.pack(side="left", padx=30)
         reset.pack(side="left")
+
+        vcmd = (root.register(self.entryValid),
+                '%d', '%P', '%s', '%S')
+        entry_x_val = tk.StringVar()
+        entry_y_val = tk.StringVar()
+        entry_z_val = tk.StringVar()
+        entry_x = tk.Entry(frame_entry_x, textvariable=entry_x_val, width=8,
+            validate='key', validatecommand=vcmd)
+        entry_y = tk.Entry(frame_entry_y, textvariable=entry_y_val, width=8,
+            validate='key', validatecommand=vcmd)
+        entry_z = tk.Entry(frame_entry_z, textvariable=entry_z_val, width=8,
+            validate='key', validatecommand=vcmd)
+        entry_x.pack()
+        entry_y.pack()
+        entry_z.pack()
+        self.entry_x_val = entry_x_val
+        self.entry_y_val = entry_y_val
+        self.entry_z_val = entry_z_val
+
+        entry_x_button = tk.Button(frame_entry_x, text="Move X", 
+            command = lambda: self.fixedMove(sisk.X,self.entry_x_val))
+        entry_y_button = tk.Button(frame_entry_y, text="Move X", 
+            command = lambda: self.fixedMove(sisk.Y,self.entry_y_val))
+        entry_z_button = tk.Button(frame_entry_z, text="Move X", 
+            command = lambda: self.fixedMove(sisk.Z,self.entry_z_val))
+        entry_x_button.pack()
+        entry_y_button.pack()
+        entry_z_button.pack()
 
         img = Image.fromarray(np.ones([500,800]))
         imgTk = ImageTk.PhotoImage(img)
@@ -367,6 +403,19 @@ class Window:
     # change status of movement towards image point
     def getMoveFlag(self):
         return self.move_flag
+
+    def entryValid(self, d, P, s, text):
+        if d == 0:
+            return True
+        if len(s) != 0:
+            if len(P.replace('-','')) > 7:
+                return False
+            return text.isdigit()
+        else:
+            return text.isdigit() or text == '-'
+
+    def fixedMove(self, axis, val):
+        com.moveRelative(axis, self.ser, val, sp, ac)
 
 # test code for when executing the class directly
 if __name__ == "__main__":
