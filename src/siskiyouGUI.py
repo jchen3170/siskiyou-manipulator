@@ -19,30 +19,53 @@ class Window:
         root.geometry("{}x{}".format(1300,700))
 
         font = ("TkDefaultFont",12)
+        font2 = ("TkDefaultFont",14)
+        font3 = ("tkDefaultFont", 7)
         pad_y = 5
 
-        root_left = tk.Frame(root, width=510)
+        root_left = tk.Frame(root, width=524)
         root_right = tk.Frame(root)
         root_bot = tk.Frame(root)
         root_bot.pack(side="bottom", fill='x', pady=(0,5))
         root_left.pack(side="left", fill='y')
         root_right.pack(fill='x')
-        
-        container_values = tk.Frame(root_left)
-        container_buttons = tk.Frame(root_left)
+
+        root_left_sub1 = tk.Frame(root_left, relief="groove", bd=3)
+        root_left_sub2 = tk.Frame(root_left, relief="groove", bd=3)
+        root_left_sub3 = tk.Frame(root_left, relief="groove", bd=3)
+        root_left_sub1.pack(fill="x", pady=(5,0), padx=(5,0))
+        root_left_sub2.pack(fill="x", pady=(5,0), padx=(5,0))
+        root_left_sub3.pack(fill="x", pady=(5,0), padx=(5,0))
+
+        root_right_sub1 = tk.Frame(root_right)
+        root_right_sub1.pack(fill="x")
+        root_right_sub2 = tk.Frame(root_right, relief="groove", bd=3)
+        root_right_sub2.pack(fill="x", padx=5)
+
+        values_text = tk.Label(root_left_sub1, text="Values", font=font2)
+        move1_text = tk.Label(root_left_sub2, text="Basic Controls", font=font2)
+        move2_text = tk.Label(root_left_sub2, text="Fixed Move", font=font2)
+        adv_text = tk.Label(root_left_sub3, text="Advanced", font=font2)
+
+        container_values = tk.Frame(root_left_sub1)
+        container_buttons = tk.Frame(root_left_sub2)
         container_move = tk.Frame(container_buttons)
         container_move2 = tk.Frame(container_move)
-        container_adv = tk.Frame(root_left)
-        container_fix_move = tk.Frame(root_left)
-        image_frame = tk.Frame(root_right)
-        image_frame_buttons = tk.Frame(image_frame)
-        container_values.pack(anchor='w')
-        container_buttons.pack(pady=(25,0))
+        container_adv = tk.Frame(root_left_sub3)
+        container_fix_move = tk.Frame(root_left_sub2)
+        image_frame = tk.Frame(root_right_sub1)
+        image_frame_buttons = tk.Frame(root_right_sub2)
+        values_text.pack(pady=(0,3))
+        container_values.pack(anchor='w', fill="x", padx=(5,0))
+        move1_text.pack(pady=(0,10))
+        container_buttons.pack()
         container_move2.pack(side="left")
-        container_fix_move.pack(pady=(50,0))
-        container_adv.pack(pady=(50,0))
+        move2_text.pack(pady=(0,10))
+        container_fix_move.pack(pady=(0,20))
+        adv_text.pack(pady=(0,10))
+        container_adv.pack(pady=(0,10))
         image_frame.pack()
-        image_frame_buttons.pack(side="bottom")
+        image_frame_buttons.pack(side="bottom", pady=10)
 
         spacing_y = 5
         frame_text = tk.Frame(container_values)
@@ -100,7 +123,7 @@ class Window:
         moving = tk.Label(frame_value, textvariable=self.move_var, font=font)
         limits = tk.Label(frame_value, textvariable=self.lims_var, font=font)
         status = tk.Label(frame_value, textvariable=self.stat_var, 
-            font=("TkDefaultFont",10))
+            font=("TkDefaultFont",9))
         velocity = tk.Label(frame_value, textvariable=self.vel_var, font=font)
         xyz.pack(anchor="w", pady=pad_y)
         position.pack(anchor="w", pady=pad_y)
@@ -110,13 +133,13 @@ class Window:
         velocity.pack(anchor="w", pady=pad_y)
 
         pad_x_button = 15
-        zero_x = tk.Button(frame_buttons_top, text="Zero X", 
+        zero_x = tk.Button(frame_buttons_top, text="Zero X", takefocus=False,
             command= lambda: self.zero(sisk.X))      
-        zero_y = tk.Button(frame_buttons_top, text="Zero Y", 
+        zero_y = tk.Button(frame_buttons_top, text="Zero Y", takefocus=False,
             command= lambda: self.zero(sisk.Y))       
-        zero_z = tk.Button(frame_buttons_top, text="Zero Z", 
+        zero_z = tk.Button(frame_buttons_top, text="Zero Z", takefocus=False,
             command= lambda: self.zero(sisk.Z))        
-        zero_all = tk.Button(frame_buttons_top, text="Zero ALL",
+        zero_all = tk.Button(frame_buttons_top,text="Zero ALL", takefocus=False,
             command= lambda: self.zeroAll())
         zero_x.pack(side="left", padx=(10,pad_x_button))
         zero_y.pack(side="left", padx=pad_x_button)
@@ -124,13 +147,13 @@ class Window:
         zero_all.pack(side="left", padx=pad_x_button)
 
         aa = 6
-        move_x = tk.Button(frame_buttons_mid, text="Move +X", 
+        move_x = tk.Button(frame_buttons_mid, text="Move +X", takefocus=False,
             command= lambda: self.move(sisk.X, True))
-        move_y = tk.Button(frame_buttons_mid, text="Move +Y", 
+        move_y = tk.Button(frame_buttons_mid, text="Move +Y", takefocus=False,
             command= lambda: self.move(sisk.Y, True))
-        move_z = tk.Button(frame_buttons_mid, text="Move +Z", 
+        move_z = tk.Button(frame_buttons_mid, text="Move +Z", takefocus=False,
             command= lambda: self.move(sisk.Z, True))
-        home = tk.Button(container_move, text="Home", 
+        home = tk.Button(container_move, text="Home", takefocus=False,
             command=self.returnHome)
         move_x.pack(side="left", padx=(3,pad_x_button-aa))
         move_y.pack(side="left", padx=pad_x_button-aa)
@@ -138,33 +161,35 @@ class Window:
         home.pack(side='right', padx=20)
 
         aa = 5
-        move_xn = tk.Button(frame_buttons_mid2, text="Move  -X", 
+        move_xn = tk.Button(frame_buttons_mid2,text="Move  -X", takefocus=False,
             command= lambda: self.move(sisk.X, False))
-        move_yn = tk.Button(frame_buttons_mid2, text="Move  -Y", 
+        move_yn = tk.Button(frame_buttons_mid2,text="Move  -Y", takefocus=False,
             command= lambda: self.move(sisk.Y, False))
-        move_zn = tk.Button(frame_buttons_mid2, text="Move  -Z", 
+        move_zn = tk.Button(frame_buttons_mid2,text="Move  -Z", takefocus=False,
             command= lambda: self.move(sisk.Z, False))
         move_xn.pack(side="left", padx=(3,pad_x_button-aa))
         move_yn.pack(side="left", padx=pad_x_button-aa)
         move_zn.pack(side="left", padx=pad_x_button-aa)
 
-        stop_x = tk.Button(frame_buttons_bot, text="Stop X", 
+        stop_x = tk.Button(frame_buttons_bot, text="Stop X", takefocus=False,
             command= lambda: self.stopMove(sisk.X))
-        stop_y = tk.Button(frame_buttons_bot, text="Stop Y", 
+        stop_y = tk.Button(frame_buttons_bot, text="Stop Y", takefocus=False,
             command= lambda: self.stopMove(sisk.Y))
-        stop_z = tk.Button(frame_buttons_bot, text="Stop Z", 
+        stop_z = tk.Button(frame_buttons_bot, text="Stop Z", takefocus=False,
             command= lambda: self.stopMove(sisk.Z))
-        stop_all = tk.Button(frame_buttons_bot, text="Stop ALL",
+        stop_all = tk.Button(frame_buttons_bot, text="Stop ALL",takefocus=False,
             command= lambda: self.stopAll())
         stop_x.pack(side="left", padx=(10,pad_x_button))
         stop_y.pack(side="left", padx=pad_x_button)
         stop_z.pack(side="left", padx=pad_x_button)
         stop_all.pack(side="left", padx=pad_x_button)
 
-        calib = tk.Button(container_adv, text="Calibration", command=self.default)
-        flush = tk.Button(container_adv, text="Flush", command=self.flush)
-        power_cycle = tk.Button(container_adv, text="POWER CYCLE", 
-            command=self.pcycle)
+        calib = tk.Button(container_adv, text="Calibration", font=font3,
+            command=self.default, takefocus=False,)
+        flush = tk.Button(container_adv, text="Flush", font=font3,
+            command=self.flush, takefocus=False,)
+        power_cycle = tk.Button(container_adv, text="POWER CYCLE", font=font3,
+            command=self.pcycle, takefocus=False,)
         calib.pack(side="left")
         flush.pack(side="left", padx=100)
         power_cycle.pack(side="left")
@@ -175,23 +200,22 @@ class Window:
         entry_y_val = tk.StringVar()
         entry_z_val = tk.StringVar()
         entry_x = tk.Entry(frame_entry_x, textvariable=entry_x_val, width=8,
-            validate='key', validatecommand=vcmd)
+            font=font, validate='key', vcmd=vcmd, bd=2, relief="ridge")
         entry_y = tk.Entry(frame_entry_y, textvariable=entry_y_val, width=8,
-            validate='key', validatecommand=vcmd)
+            font=font, validate='key', vcmd=vcmd, bd=2, relief="ridge")
         entry_z = tk.Entry(frame_entry_z, textvariable=entry_z_val, width=8,
-            validate='key', validatecommand=vcmd)
+            font=font, validate='key', vcmd=vcmd, bd=2, relief="ridge")
         entry_x.pack()
         entry_y.pack()
         entry_z.pack()
         self.entry_x_val = entry_x_val
         self.entry_y_val = entry_y_val
         self.entry_z_val = entry_z_val
-
-        entry_x_button = tk.Button(frame_entry_x, text="Move X", 
+        entry_x_button = tk.Button(frame_entry_x, text="Move X",takefocus=False,
             command = lambda: self.fixedMove(sisk.X,self.entry_x_val))
-        entry_y_button = tk.Button(frame_entry_y, text="Move X", 
+        entry_y_button = tk.Button(frame_entry_y, text="Move Y",takefocus=False,
             command = lambda: self.fixedMove(sisk.Y,self.entry_y_val))
-        entry_z_button = tk.Button(frame_entry_z, text="Move X", 
+        entry_z_button = tk.Button(frame_entry_z, text="Move Z",takefocus=False,
             command = lambda: self.fixedMove(sisk.Z,self.entry_z_val))
         entry_x_button.pack(pady=(10,0))
         entry_y_button.pack(pady=(10,0))
@@ -204,16 +228,17 @@ class Window:
         image_label.pack(anchor="e")
         image_label.bind("<ButtonPress-1>", self.imagePoint)
         image_move = tk.Button(image_frame_buttons, text="Move",
-            command= lambda: self.setMoveFlag(True))
+            takefocus=False, command= lambda: self.setMoveFlag(True))
         image_pt_undo = tk.Button(image_frame_buttons, text="Undo", 
-            command=self.undoImagePoint)
+            takefocus=False, command=self.undoImagePoint)
         image_pt_reset = tk.Button(image_frame_buttons, text="Reset",
-            command=self.resetImagePoints)
-        image_move.pack(side="left", padx=25, pady=(15,0))
-        image_pt_undo.pack(side="left", padx=25, pady=(15,0))
-        image_pt_reset.pack(side="left", padx=25, pady=(15,0))
+            takefocus=False, command=self.resetImagePoints)
+        image_move.pack(side="left", padx=25)
+        image_pt_undo.pack(side="left", padx=25)
+        image_pt_reset.pack(side="left", padx=25)
 
-        close_button = tk.Button(root_bot, text="Close", command=self.stop)
+        close_button = tk.Button(root_bot, text="Close", command=self.stop,
+            takefocus=False)
         close_button.pack()
 
         root_left.pack_propagate(0)
@@ -408,19 +433,25 @@ class Window:
     # checks to make sure entered value into entry widget is numerical
     def entryValid(self, d, i, P, s, text):
         # always allow deletes
-        if d == 0:
+        if d == '0':
             return True
         # make sure number value never exceeds 7 digits
         if len(P.replace('-','')) > 7:
             return False
         # allow for insertion of neg. sign at beginning
         if i == '0':
-            return text.isdigit() or text == '-'
+            # make sure there is ever only one neg. sign
+            if s:
+                return (text.isdigit() or text == '-') and ('-' not in s)
+            else:
+                return text.isdigit() or text == '-'
         else:
             return text.isdigit()
 
+    # moves axis a fixed distance
     def fixedMove(self, axis, val):
         amt = val.get()
+        # confirm that textbox entry is actually an integer
         try:
             int(amt)
             com.moveRelative(axis, self.ser, amt, sp, ac)
