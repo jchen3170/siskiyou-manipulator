@@ -25,7 +25,8 @@ global_corner = (0,0)
 def main_loop(ser, gui):
     global image
     rospy.init_node("siskiyouMain", anonymous=False)
-    rospy.Subscriber("/camera/image_raw", Image, callback, queue_size=10)
+    rospy.Subscriber("/camera/image_raw", Image, 
+        lambda data: callback(data, gui), queue_size=10)
 
     pos = (0,0,0)
     mov = (False,False,False)
@@ -41,7 +42,6 @@ def main_loop(ser, gui):
         gui.setLimits(lims)
         gui.setStatus(status)
         movePipette(gui)
-        # image = cv2.resize(image, (0,0), fx=0.75, fy=0.75)
         gui.setImage(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         flag = gui.update()
 
@@ -50,7 +50,7 @@ def main_loop(ser, gui):
 
         time.sleep(0.001)
 
-def callback(data):
+def callback(data, gui):
     global image
     global global_corner
 
@@ -61,22 +61,41 @@ def callback(data):
     mask = np.zeros(frame.shape, np.uint8)
     cnt_mask = np.zeros(frame.shape, np.uint8)
     edges = np.zeros(frame.shape, np.uint8)
-
+    
     if visual_tuple is not None:
-        mask = visual_tuple[0]
-        cnt_mask = visual_tuple[1]
-        edges = visual_tuple[2]
-        overlay = vision.draw_mask(frame, edges, (0, 0, 255))
-        overlay = vision.draw_mask(overlay, cnt_mask, (0,255,0))
+        if visual_tuple[0] is not None:
+            mask = visual_tuple[0]
+        if visual_tuple[1] is not None:
+            cnt_mask = visual_tuple[1]
+        if visual_tuple[2] is not None:
+            edges = visual_tuple[2]
+        overlay_edges = vision.draw_mask(frame, edges, (0, 0, 255))
+        overlay_contour = vision.draw_mask(frame, cnt_mask, (0,255,0))
+        overlay_both = vision.draw_mask(overlay_edges, cnt_mask, (0,255,0))
     else:
         overlay = frame
+        overlay_edges = frame
+        overlay_contour = frame
+        overlay_both = frame
 
     if corner is not None:
         cv2.circle(frame, corner, 2, (255,255,255), -1)
-        cv2.circle(overlay, corner, 2, (255,255,255), -1)
+        cv2.circle(overlay_edges, corner, 2, (255,255,255), -1)
+        cv2.circle(overlay_contour, corner, 2, (255,255,255), -1)
+        cv2.circle(overlay_both, corner, 2, (255,255,255), -1)
         global_corner = corner
 
-    image = frame
+    edge_flag = gui.getEdgeFlag()
+    contour_flag = gui.getContourFlag()
+
+    if edge_flag and contour_flag:
+        image = overlay_both
+    elif edge_flag:
+        image = overlay_edges
+    elif contour_flag:
+        image = overlay_contour
+    else:
+        image = frame
 
 def movePipette(gui):
     global image
@@ -86,7 +105,7 @@ def movePipette(gui):
     for pt in pt_stack:
         cv2.circle(image, pt, 2, (0,200,0), -1)
     if pt_stack:
-        cv2.line(image, global_corner, pt_stack[0], (0,200,0))
+        cv2.line(image, global_corner, pt_stack[0], (200,100,0))
         if gui.getMoveFlag():
             # scale velocity values based on distance
             print (pt_stack[0][0]-global_corner[0], 

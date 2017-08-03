@@ -8,8 +8,8 @@ import Image
 import ImageTk
 import numpy as np
 
-sp = 500
-ac = 25
+SP = 500
+AC = 25
 class Window:
     # initialize GUI components on class creation
     def __init__(self, ser):
@@ -40,7 +40,7 @@ class Window:
         root_right_sub1 = tk.Frame(root_right)
         root_right_sub1.pack(fill="x")
         root_right_sub2 = tk.Frame(root_right, relief="groove", bd=3)
-        root_right_sub2.pack(fill="x", padx=5)
+        root_right_sub2.pack(fill="x", padx=10)
 
         values_text = tk.Label(root_left_sub1, text="Values", font=font2)
         move1_text = tk.Label(root_left_sub2, text="Basic Controls", font=font2)
@@ -55,6 +55,7 @@ class Window:
         container_fix_move = tk.Frame(root_left_sub2)
         image_frame = tk.Frame(root_right_sub1)
         image_frame_buttons = tk.Frame(root_right_sub2)
+        image_frame_buttons2 = tk.Frame(root_right_sub2)
         values_text.pack(pady=(0,3))
         container_values.pack(anchor='w', fill="x", padx=(5,0))
         move1_text.pack(pady=(0,10))
@@ -65,7 +66,8 @@ class Window:
         adv_text.pack(pady=(0,10))
         container_adv.pack(pady=(0,10))
         image_frame.pack()
-        image_frame_buttons.pack(side="bottom", pady=10)
+        image_frame_buttons.pack(pady=10)
+        image_frame_buttons2.pack(pady=10)
 
         spacing_y = 5
         frame_text = tk.Frame(container_values)
@@ -237,6 +239,14 @@ class Window:
         image_pt_undo.pack(side="left", padx=25)
         image_pt_reset.pack(side="left", padx=25)
 
+        image_edge = tk.Button(image_frame_buttons2, text="Show Edges",
+            takefocus=False, command= self.setEdgeFlag)
+        image_contour = tk.Button(image_frame_buttons2, text="Show Contour",
+            takefocus=False, command= self.setContourFlag)
+        image_edge.pack(side="left", padx=36)
+        image_contour.pack(side="left", padx=25)
+
+
         close_button = tk.Button(root_bot, text="Close", command=self.stop,
             takefocus=False)
         close_button.pack()
@@ -251,15 +261,19 @@ class Window:
         self.reset_flag1 = False
         self.reset_flag2 = False
         self.move_flag = False
+        self.edge_flag = False
+        self.contour_flag = False
 
-    # update GUI variables
+    # manually update GUI
     def update(self):
+        # udpate text/display variables
         self.pos_var.set(str(self.pos))
         self.move_var.set(str(self.moving))
         self.lims_var.set(str(self.lims))
         self.stat_var.set(str(self.raw_status))
         self.vel_var.set(str(self.vel))
         self.image_label.configure(image=self.image)
+        # update GUI display
         self.root.update()
         # handle the stages of the reset/calibration function
         if self.stop_flag:
@@ -290,17 +304,17 @@ class Window:
     def move(self, axis, dir):
         if not self.reset_flag1 or self.reset_flag2:
             if dir:
-                com.velocityMode(axis, self.ser, sp, ac)
-                self.setVelocity(axis, sp)
+                com.velocityMode(axis, self.ser, SP, AC)
+                self.setVelocity(axis, SP)
             else:
-                com.velocityMode(axis, self.ser, -sp, ac)
-                self.setVelocity(axis, -sp)
+                com.velocityMode(axis, self.ser, -SP, AC)
+                self.setVelocity(axis, -SP)
         else:
             print "Currently in reset mode"
 
     # stop specified axis
     def stopMove(self, axis):
-        com.velocityModeDisable(axis, self.ser, self.getVelocity(axis), ac)
+        com.velocityModeDisable(axis, self.ser, self.getVelocity(axis), AC)
         self.setVelocity(axis, 0)
         self.reset_flag1 = False
         self.reset_flag2 = False
@@ -314,13 +328,13 @@ class Window:
 
     # return all axis to Home position
     def returnHome(self):
-        com.returnHome(sisk.X, self.ser, sp, ac)
-        com.returnHome(sisk.Y, self.ser, sp, ac)
-        com.returnHome(sisk.Z, self.ser, sp, ac)
+        com.returnHome(sisk.X, self.ser, SP, AC)
+        com.returnHome(sisk.Y, self.ser, SP, AC)
+        com.returnHome(sisk.Z, self.ser, SP, AC)
 
     # initiate reset/calibration
     def default(self):
-        com.zeroAll(self.ser, sp, ac)
+        com.zeroAll(self.ser, SP, AC)
         self.reset_flag1 = True
 
     # flush controller output to try to fix communication problems
@@ -361,9 +375,9 @@ class Window:
 
     # part 1 of calibration: move to set position after hitting limits
     def reset_p1(self):
-        com.moveRelative(sisk.X, self.ser, 2000000, sp, ac)
-        com.moveRelative(sisk.Y, self.ser, 2000000, sp, ac)
-        com.moveRelative(sisk.Z, self.ser, 2000000, sp, ac)
+        com.moveRelative(sisk.X, self.ser, 2000000, SP, AC)
+        com.moveRelative(sisk.Y, self.ser, 2000000, SP, AC)
+        com.moveRelative(sisk.Z, self.ser, 2000000, SP, AC)
 
     # part 2 of calibration: zero all axis
     def reset_p2(self):
@@ -454,10 +468,30 @@ class Window:
         # confirm that textbox entry is actually an integer
         try:
             int(amt)
-            com.moveRelative(axis, self.ser, amt, sp, ac)
+            # reverse direction if Z axis
+            if axis is sisk.Z:
+                amt = "-" + amt
+            print amt
+            com.moveRelative(axis, self.ser, amt, SP, AC)
             return True
         except ValueError:
             return False
+
+    # adjusts settings for overlaying edge map
+    def setEdgeFlag(self):
+        self.edge_flag = not self.edge_flag
+
+    # returns current flag state
+    def getEdgeFlag(self):
+        return self.edge_flag
+
+    # adjusts settings for overlaying contour map
+    def setContourFlag(self):
+        self.contour_flag = not self.contour_flag
+
+    # returns current flag state
+    def getContourFlag(self):
+        return self.contour_flag
 
 # test code for when executing the class directly
 if __name__ == "__main__":
