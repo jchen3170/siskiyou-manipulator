@@ -20,6 +20,11 @@ def setHome(axis, ser, val=None):
         st = axis + sisk.HOME + ' ' + str(val)
     return ser.write(st)
 
+# zero all axis
+# inputs:
+#     ser: siskiyouSerial object
+#     sp: max velocity
+#     ac: acceleration rate
 def zeroAll(ser, sp, ac):
     moveNegLimit(sisk.X, ser, sp, ac)
     moveNegLimit(sisk.Y, ser, sp, ac)
@@ -75,12 +80,20 @@ def moveRelative(axis, ser, amt, sp, ac):
     # write commands to device
     ser.write_multiple(s_list)
 
+# move to hardstop in negative direction
 def moveNegLimit(axis, ser, sp, ac):
     velocityMode(axis, ser, -sp, ac)
 
+# move to hardstop in positive direction
 def movePosLimit(axis, ser, sp, ac):
     velocityMode(axis, ser, sp, ac)
 
+# start velocity mode
+# inputs:
+#     axis: target axis
+#     ser: siskiyouSerial object
+#     amt: max velocity to run at
+#     ac: acceleration rate
 def velocityMode(axis, ser, amt, ac):
     str1 = axis + sisk.ENABLE
     str2 = axis + sisk.ACCEL + ' ' + str(ac)
@@ -88,6 +101,12 @@ def velocityMode(axis, ser, amt, ac):
     s_list = [str1, str2, str3]
     ser.write_multiple(s_list)
 
+# switch off of velocity mode back to positional control
+# inputs:
+#     axis: target axis
+#     ser: siskiyouSerial object
+#     sp: max velocity to run at
+#     ac: accerleration rate
 def velocityModeDisable(axis, ser, sp, ac):
     moveRelative(axis, ser, sp*12, sp, ac)
 
@@ -113,12 +132,14 @@ def getPosition(axis, ser):
             print "POS_ERROR:", pos
             return ''
 
+# get position of all axis; returns a tuple
 def getPositionAll(ser):
     x = getPosition(sisk.X, ser)
     y = getPosition(sisk.Y, ser)
     z = getPosition(sisk.Z, ser)
     return (x,y,z)
 
+# reset target axis (software power cycle)
 def resetAxis(axis, ser):
     st = axis + sisk.RESET
     return ser.write(st)
@@ -145,6 +166,7 @@ def getStatus(axis, ser):
             print "STAT_ERROR:", status
             return ''
 
+# decodes 16-bit status response to see if moving flag is on
 def isMoving(status):
     if status == '':
         return ''
@@ -156,6 +178,7 @@ def isMoving(status):
         else:
             return False
 
+# decodes 16-bit status response to see if limit flag is on
 def checkLimit(axis=None, ser=None, stat=None):
     if stat is None:
         s = getStatus(axis, ser)
@@ -166,6 +189,8 @@ def checkLimit(axis=None, ser=None, stat=None):
     else:
         return s[0] == '1' or s[2] == '1'
 
+# gets 16-bit status of all axis and checks if moving/limit
+# returns a tuple of tuples
 def getStatusAll(ser):
     x = getStatus(sisk.X, ser)
     y = getStatus(sisk.Y, ser)
@@ -179,6 +204,7 @@ def getStatusAll(ser):
 
     return ((xm, ym, zm), (xl, yl, zl), (x, y, z))
 
+# decodes 16-bit status to see if in position flag is on (finished trajectory)
 def isInPosition(status):
     if status == '':
         return ''
@@ -190,6 +216,7 @@ def isInPosition(status):
         else:
             return False
 
+# uses a combination of moving and inposition to determine if path is complete
 def isPathComplete(ser):
     s = getStatusAll(ser)
     moving = (isMoving(s[2][0]),
@@ -203,6 +230,7 @@ def isPathComplete(ser):
             return True
     return False
 
+# initializes PID gain values
 def init_controls(ser, P, I, D):
     P = 8000 # must be between 4000 - 32000
     I = 250 # must be between 1 - 32000
@@ -222,6 +250,7 @@ def hex2int(st):
         val -= 0x100000000
     return val
 
+# converts encoder counts to inches
 def inch2encoder(val):
-    counts_per_inch = 5004181
+    counts_per_inch = 5004181 # ONLY AN ESTIMATION
     return val*counts_per_inch

@@ -2,8 +2,7 @@
 
 '''
 Main script for interfacing/communicating with the Siskiyou Design 
-Micromanipulator (Series MX7000). 
-Assumes R232->USB
+Micromanipulator (Series MX7000). (Assumes R232->USB)
 
 '''
 import time
@@ -18,15 +17,20 @@ import siskiyouCommands as com
 import siskiyouLibrary as sisk
 import siskiyouVision as vision
 import siskiyouGUI
-# import siskiyouGetPort as port
 
+# assigned USB port address for device (change accordingly)
+PORT = "/dev/ttyUSB0"
+
+# camera publish topic name
+CAMERA_TOPIC = "/camera/image_raw"
+
+# global scope variables 
 image = np.zeros((480,760,3), np.uint8)
 global_corner = (0,0)
+
+# main loop that updates GUI and sends commands
 def main_loop(ser, gui):
     global image
-    rospy.init_node("siskiyouMain", anonymous=False)
-    rospy.Subscriber("/camera/image_raw", Image, 
-        lambda data: callback(data, gui), queue_size=10)
 
     pos = (0,0,0)
     mov = (False,False,False)
@@ -34,34 +38,43 @@ def main_loop(ser, gui):
     status = ('0','0','0')
 
     while True:
+        # grab position / status of all axis
         pos = com.getPositionAll(ser)
         mov, lims, status = com.getStatusAll(ser)
 
+        # update GUI variables
         gui.setPosition(pos)
         gui.setMoving(mov)
         gui.setLimits(lims)
         gui.setStatus(status)
         movePipette(gui)
         gui.setImage(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        # update GUI visuals
         flag = gui.update()
 
+        # break if GUI is closed or script is stopped
         if rospy.is_shutdown() or flag:
             break
 
+        # 1 ms delay between updates
         time.sleep(0.001)
 
+# callback function for rospy subscriber: analyzes the camera feed
 def callback(data, gui):
     global image
     global global_corner
 
+    # convert from ROS image format to CV2 image format
     frame = bridge.imgmsg_to_cv2(data, "bgr8")
-
-    (corner, visual_tuple) = vision.find_tip(frame, True)
 
     mask = np.zeros(frame.shape, np.uint8)
     cnt_mask = np.zeros(frame.shape, np.uint8)
     edges = np.zeros(frame.shape, np.uint8)
-    
+
+    # find pipette tip in image
+    (corner, visual_tuple) = vision.find_tip(frame, True)
+
+    # check if filter was successful
     if visual_tuple is not None:
         if visual_tuple[0] is not None:
             mask = visual_tuple[0]
@@ -72,12 +85,14 @@ def callback(data, gui):
         overlay_edges = vision.draw_mask(frame, edges, (0, 0, 255))
         overlay_contour = vision.draw_mask(frame, cnt_mask, (0,255,0))
         overlay_both = vision.draw_mask(overlay_edges, cnt_mask, (0,255,0))
+    # otherwise just return the original frame
     else:
         overlay = frame
         overlay_edges = frame
         overlay_contour = frame
         overlay_both = frame
 
+    # if pipette tip was found, draw onto resulting image
     if corner is not None:
         cv2.circle(frame, corner, 2, (255,255,255), -1)
         cv2.circle(overlay_edges, corner, 2, (255,255,255), -1)
@@ -85,6 +100,7 @@ def callback(data, gui):
         cv2.circle(overlay_both, corner, 2, (255,255,255), -1)
         global_corner = corner
 
+    # use GUI flags to determine which visuals to show
     edge_flag = gui.getEdgeFlag()
     contour_flag = gui.getContourFlag()
 
@@ -97,6 +113,7 @@ def callback(data, gui):
     else:
         image = frame
 
+# function to move pipette tip to selected points
 def movePipette(gui):
     global image
     global global_corner
@@ -116,15 +133,20 @@ def movePipette(gui):
 
 
 if __name__ == "__main__":
-    port = "/dev/ttyUSB0"
-    vel = 1000
-    accel = 100
-    dist = 2000000
-
+    # intialize opencv image converter
     bridge = CvBridge()
-    ser = siskiyouSerial.SiskiyouSerial(port)
+    # initialize serial port class
+    ser = siskiyouSerial.SiskiyouSerial(PORT)
+    # intialize GUI class
     gui = siskiyouGUI.Window(ser)
 
+    # initialize subscriber
+    rospy.init_node("siskiyouMain", anonymous=False)
+    rospy.Subscriber(CAMERA_TOPIC, Image, 
+        lambda data: callback(data, gui), queue_size=10)
+
+    # begin mainloop
     main_loop(ser, gui)
 
+    # close serial connection on exit
     ser.close()

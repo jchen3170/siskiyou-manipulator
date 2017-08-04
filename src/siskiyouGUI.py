@@ -13,6 +13,7 @@ AC = 25
 class Window:
     # initialize GUI components on class creation
     def __init__(self, ser):
+        # specify window size
         root = tk.Tk()
         root.title("Manipulator Status")
         root.resizable(width=False, height=False)
@@ -23,6 +24,7 @@ class Window:
         font3 = ("tkDefaultFont", 7)
         pad_y = 5
 
+        # high level parent frames
         root_left = tk.Frame(root, width=524)
         root_right = tk.Frame(root)
         root_bot = tk.Frame(root)
@@ -30,6 +32,7 @@ class Window:
         root_left.pack(side="left", fill='y')
         root_right.pack(fill='x')
 
+        # high level subframes
         root_left_sub1 = tk.Frame(root_left, relief="groove", bd=3)
         root_left_sub2 = tk.Frame(root_left, relief="groove", bd=3)
         root_left_sub3 = tk.Frame(root_left, relief="groove", bd=3)
@@ -42,11 +45,13 @@ class Window:
         root_right_sub2 = tk.Frame(root_right, relief="groove", bd=3)
         root_right_sub2.pack(fill="x", padx=10)
 
+        # labels for high level subframes
         values_text = tk.Label(root_left_sub1, text="Values", font=font2)
         move1_text = tk.Label(root_left_sub2, text="Basic Controls", font=font2)
         move2_text = tk.Label(root_left_sub2, text="Fixed Move", font=font2)
         adv_text = tk.Label(root_left_sub3, text="Advanced", font=font2)
 
+        # container frames in the subframes
         container_values = tk.Frame(root_left_sub1)
         container_buttons = tk.Frame(root_left_sub2)
         container_move = tk.Frame(container_buttons)
@@ -61,7 +66,7 @@ class Window:
         move1_text.pack(pady=(0,10))
         container_buttons.pack()
         container_move2.pack(side="left")
-        move2_text.pack(pady=(0,10))
+        move2_text.pack(pady=(10,10))
         container_fix_move.pack(pady=(0,20))
         adv_text.pack(pady=(0,10))
         container_adv.pack(pady=(0,10))
@@ -90,6 +95,7 @@ class Window:
         frame_entry_y.pack(side="left", padx=25)
         frame_entry_z.pack(side="left", padx=25)
 
+        # text labels for the status frame
         text = tk.Label(frame_text, text= "", font=font)
         text1 = tk.Label(frame_text, text="Position: ", font=font)
         text2 = tk.Label(frame_text, text="Moving: ", font=font)
@@ -103,12 +109,12 @@ class Window:
         text4.pack(anchor="w", pady=pad_y)
         text5.pack(anchor="w", pady=pad_y)
 
+        # changing variables that show current status
         self.pos_var = tk.StringVar()
         self.move_var = tk.StringVar()
         self.lims_var = tk.StringVar()
         self.stat_var = tk.StringVar()
         self.vel_var = tk.StringVar()
-
         self.pos = (0, 0, 0)
         self.pos_var.set(str(self.pos))
         self.moving = ('', '', '')
@@ -120,6 +126,7 @@ class Window:
         self.vel = (0, 0, 0)
         self.vel_var.set(str(self.vel))
 
+        # create labels to display the changing statuses
         xyz = tk.Label(frame_value, text="(X, Y, Z)", font=font)
         position = tk.Label(frame_value, textvariable=self.pos_var, font=font)
         moving = tk.Label(frame_value, textvariable=self.move_var, font=font)
@@ -134,6 +141,7 @@ class Window:
         status.pack(anchor="w", pady=pad_y)
         velocity.pack(anchor="w", pady=pad_y)
 
+        # buttons to trigger the zero commands
         pad_x_button = 15
         zero_x = tk.Button(frame_buttons_top, text="Zero X", takefocus=False,
             command= lambda: self.zero(sisk.X))      
@@ -148,6 +156,7 @@ class Window:
         zero_z.pack(side="left", padx=pad_x_button)
         zero_all.pack(side="left", padx=pad_x_button)
 
+        # buttons to trigger continuous movement in positive direction
         aa = 6
         move_x = tk.Button(frame_buttons_mid, text="Move +X", takefocus=False,
             command= lambda: self.move(sisk.X, True))
@@ -162,6 +171,7 @@ class Window:
         move_z.pack(side="left", padx=pad_x_button-aa)
         home.pack(side='right', padx=20)
 
+        # buttons to trigger continuous movement in negative direction
         aa = 5
         move_xn = tk.Button(frame_buttons_mid2,text="Move  -X", takefocus=False,
             command= lambda: self.move(sisk.X, False))
@@ -173,6 +183,7 @@ class Window:
         move_yn.pack(side="left", padx=pad_x_button-aa)
         move_zn.pack(side="left", padx=pad_x_button-aa)
 
+        # buttons to stop movement in specific/all axis
         stop_x = tk.Button(frame_buttons_bot, text="Stop X", takefocus=False,
             command= lambda: self.stopMove(sisk.X))
         stop_y = tk.Button(frame_buttons_bot, text="Stop Y", takefocus=False,
@@ -186,9 +197,10 @@ class Window:
         stop_z.pack(side="left", padx=pad_x_button)
         stop_all.pack(side="left", padx=pad_x_button)
 
-        calib = tk.Button(container_adv, text="Calibration", font=font3,
+        # buttons for advanced controls
+        calib = tk.Button(container_adv, text="CALIBRATE", font=font3,
             command=self.default, takefocus=False,)
-        flush = tk.Button(container_adv, text="Flush", font=font3,
+        flush = tk.Button(container_adv, text="FLUSH", font=font3,
             command=self.flush, takefocus=False,)
         power_cycle = tk.Button(container_adv, text="POWER CYCLE", font=font3,
             command=self.pcycle, takefocus=False,)
@@ -196,6 +208,7 @@ class Window:
         flush.pack(side="left", padx=100)
         power_cycle.pack(side="left")
 
+        # buttons/entries for fixed distance movement
         vcmd = (root.register(self.entryValid),
                 '%d', '%i', '%P', '%s', '%S')
         entry_x_val = tk.StringVar()
@@ -223,6 +236,7 @@ class Window:
         entry_y_button.pack(pady=(10,0))
         entry_z_button.pack(pady=(10,0))
 
+        # image display and buttons
         img = Image.fromarray(np.ones([500,800]))
         imgTk = ImageTk.PhotoImage(img)
         self.image = imgTk
@@ -246,13 +260,15 @@ class Window:
         image_edge.pack(side="left", padx=36)
         image_contour.pack(side="left", padx=25)
 
-
+        # close button
         close_button = tk.Button(root_bot, text="Close", command=self.stop,
             takefocus=False)
         close_button.pack()
 
+        # disable automatic resizing of left high level frame
         root_left.pack_propagate(0)
 
+        # assign important variables to class level
         self.root = root
         self.ser = ser
         self.image_label = image_label
