@@ -28,6 +28,26 @@ CAMERA_TOPIC = "/camera/image_raw"
 image = np.zeros((480,760,3), np.uint8)
 global_corner = (0,0)
 
+# main function 
+def main():
+    # intialize opencv image converter
+    bridge = CvBridge()
+    # initialize serial port class
+    ser = siskiyouSerial.SiskiyouSerial(PORT)
+    # intialize GUI class
+    gui = siskiyouGUI.Window(ser)
+
+    # initialize subscriber
+    rospy.init_node("siskiyouMain", anonymous=False)
+    rospy.Subscriber(CAMERA_TOPIC, Image, 
+        lambda data: callback(data, gui), queue_size=10)
+
+    # begin mainloop
+    main_loop(ser, gui)
+
+    # close serial connection on exit
+    ser.close()
+
 # main loop that updates GUI and sends commands
 def main_loop(ser, gui):
     global image
@@ -133,20 +153,4 @@ def movePipette(gui):
 
 
 if __name__ == "__main__":
-    # intialize opencv image converter
-    bridge = CvBridge()
-    # initialize serial port class
-    ser = siskiyouSerial.SiskiyouSerial(PORT)
-    # intialize GUI class
-    gui = siskiyouGUI.Window(ser)
-
-    # initialize subscriber
-    rospy.init_node("siskiyouMain", anonymous=False)
-    rospy.Subscriber(CAMERA_TOPIC, Image, 
-        lambda data: callback(data, gui), queue_size=10)
-
-    # begin mainloop
-    main_loop(ser, gui)
-
-    # close serial connection on exit
-    ser.close()
+    main()
