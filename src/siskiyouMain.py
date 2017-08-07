@@ -30,6 +30,9 @@ global_corner = (0,0)
 
 # main function 
 def main():
+    global bridge
+    global ser
+
     # intialize opencv image converter
     bridge = CvBridge()
     # initialize serial port class
@@ -83,6 +86,7 @@ def main_loop(ser, gui):
 def callback(data, gui):
     global image
     global global_corner
+    global bridge
 
     # convert from ROS image format to CV2 image format
     frame = bridge.imgmsg_to_cv2(data, "bgr8")
