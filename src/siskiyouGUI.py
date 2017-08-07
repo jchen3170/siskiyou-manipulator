@@ -8,8 +8,9 @@ import Image
 import ImageTk
 import numpy as np
 
-SP = 500
-AC = 25
+SP = 500 # max velocity value
+AC = 25 # acceleration rate
+
 class Window:
     # initialize GUI components on class creation
     def __init__(self, ser):

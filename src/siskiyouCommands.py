@@ -251,6 +251,6 @@ def hex2int(st):
     return val
 
 # converts encoder counts to inches
-def inch2encoder(val):
-    counts_per_inch = 5004181 # ONLY AN ESTIMATION
-    return val*counts_per_inch
+def encoder2mm(val):
+    counts_per_mm = 198472
+    return val*counts_per_mm
