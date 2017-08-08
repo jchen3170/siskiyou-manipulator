@@ -17,6 +17,8 @@ To start:
 
     roslaunch siskiyou siskiyou.launch
 
+https://sourceforge.net/projects/libdc1394/
+https://sourceforge.net/projects/libusb/
 
 USAGE:
 
