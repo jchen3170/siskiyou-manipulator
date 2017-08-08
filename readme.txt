@@ -1,3 +1,5 @@
+INSTALLING/SETUP:
+
 Required ROS packages (assuming you already have OpenCV):
 
     sudo apt-get install ros-$ROS_DISTRO-pointgrey-camera-driver
@@ -7,7 +9,6 @@ Required Python Modules:
 
     sudo apt-get install python-imaging-tk
 
-
 For port address:
 
     dmesg | grep pl2303
@@ -15,3 +16,7 @@ For port address:
 To start:
 
     roslaunch siskiyou siskiyou.launch
+
+
+USAGE:
+
