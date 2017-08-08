@@ -18,20 +18,24 @@ import siskiyouLibrary as sisk
 import siskiyouVision as vision
 import siskiyouGUI
 
-# assigned USB port address for device (change accordingly)
-PORT = "/dev/ttyUSB0"
-
-# camera publish topic name
-CAMERA_TOPIC = "/camera/image_raw"
-
-# global scope variables 
-image = np.zeros((480,760,3), np.uint8)
-global_corner = (0,0)
-
 # main function 
 def main():
+    global PORT
+    global CAMERA_TOPIC
+    global image
+    global global_corner
     global bridge
     global ser
+
+    # assigned USB port address for device (change accordingly)
+    PORT = "/dev/ttyUSB0"
+
+    # camera publish topic name
+    CAMERA_TOPIC = "/camera/image_raw"
+
+    # global scope variables 
+    image = np.zeros((480,760,3), np.uint8)
+    global_corner = (0,0)
 
     # intialize opencv image converter
     bridge = CvBridge()

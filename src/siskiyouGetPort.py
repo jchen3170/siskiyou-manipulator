@@ -1,30 +1,33 @@
 #!/usr/bin/env python
 
 import re
-import rospy
-
-import show_devices as sd
-
-device_id = "067b:2303"
+import subprocess
 
 def getPort():
-    devices = sd.toString(sd.show_devices())
-    line = re.findall("^.*"+ device_id +".*$",devices,re.MULTILINE)
+    dmesg = subprocess.Popen('dmesg', stdout=subprocess.PIPE)
+    dmesg = dmesg.stdout.read()
 
-    if len(line) == 0:
-        raise ValueError("Device ID not found")
-        return ""
-    elif len(line) > 1:
-        raise ValueError("Multiple device ID's found")
-        return ""
+    lines = []
+    port = ''
+    for line in dmesg.split('\n'):
+        search = re.search(r".*pl2303.*", line)
+        if search:
+            lines.append(search.group())
+    if not lines:
+        print "Device cannot be found"
+        return ''
 
-    subline = re.findall("'/dev/bus/.*?'",line[0])
+    for line in lines:
+        search = re.search(r".*converter now attached to", line)
+        if search:
+            port = line.replace(search.group(), '').replace(' ', '')
+            break
+    if not lines:
+        print "Device cannot be found"
+        return ''
 
-    if len(subline) == 0:
-        raise ValueError("Address not found in device ID line")
-        return ""
-    elif len(subline) > 1:
-        raise ValueError("Multiple matches in device ID line")
-
-    port = re.sub("'","",subline[0])
     return port
+
+if __name__ == "__main__":
+    port = getPort()
+    print port

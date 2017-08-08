@@ -18,7 +18,7 @@ Download PointGrey Camera Drivers (Model FireFlyMV FMVU-03MTC):
     Download, extract, and install with instructions from the README.txt
     Restart computer
 
-For port address (/ttyUSB#) after plugging in controller:
+For port address (/dev/ttyUSB#) after plugging in controller:
 
     dmesg | grep pl2303
 
@@ -29,3 +29,38 @@ To start:
     roscore (if roscore not already running)
     source the workspace (source <address to workspace>/devel/setup.bash)
     roslaunch siskiyou siskiyou.launch
+Adjustments:
+    siskiyouMain.py: change PORT to match your port address
+    siskiyouVision.py: change the HSV min/max to adjust filter results
+    siskiyouGUI.py: change SP/AC to adjust default max speed/acceleration values
+
+GUI:
+
+Values:
+    Position: X, Y, Z positions in encoder counts
+    Moving: indicates if axes are moving
+    Limits: indicates if axes have hit their mechanical hardstop
+    Status: raw 16-bit status. Look in MVP2001 manual for more information
+    Velocity: current set velocity
+
+Basic Controls:
+    Zero: zero selected axis
+    Move +: move in positive direction at default speed
+    Move -: move in negative direction at default speed
+    Stop: stop axis
+
+Fixed Move:
+    Enter distance in encoder counts and hit "move" (max range is ~4000000)
+
+Advanced:
+    Calibrate: preset cycle that centers every axis at their midpoint
+    Flush: flushes output from controller for 1 sec.
+    Power Cycle: software reset. (Use when motors get stuck on intialization)
+
+Image:
+    Display: click image to add points
+    Move: move from current location to first selected point
+    Undo: remove last added point
+    Reset: remove all points
+    Show Edges: show results of the edgemap of the filter
+    Show Contour: show the contour approximation used to find the pipette tip
