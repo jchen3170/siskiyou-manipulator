@@ -17,6 +17,7 @@ import siskiyouCommands as com
 import siskiyouLibrary as sisk
 import siskiyouVision as vision
 import siskiyouGUI
+import siskiyouGetPort
 
 # main function 
 def main():
@@ -28,7 +29,11 @@ def main():
     global ser
 
     # assigned USB port address for device (change accordingly)
-    PORT = "/dev/ttyUSB0"
+    PORT = siskiyouGetPort.getPort()
+    if PORT is '':
+        PORT = "/dev/ttyUSB0"
+    else:
+        PORT = "/dev/" + PORT
 
     # camera publish topic name
     CAMERA_TOPIC = "/camera/image_raw"
