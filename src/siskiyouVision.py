@@ -45,8 +45,14 @@ def find_tip(frame, visuals):
     edges = cv2.Canny(mask_close, 100, 200)
 
     # approximate cleaned image using hull contours
-    contours , _ = cv2.findContours(mask_close, cv2.RETR_TREE, 
-        cv2.CHAIN_APPROX_NONE)
+    contours = []
+    try:
+        contours, _ = cv2.findContours(mask_close, cv2.RETR_TREE, 
+            cv2.CHAIN_APPROX_NONE)
+    except:
+        _, contours, _ = cv2.findContours(mask_close, cv2.RETR_TREE, 
+            cv2.CHAIN_APPROX_NONE)
+
     # make sure contours exist
     if len(contours) is not 0:
         cnt = contours[0]
