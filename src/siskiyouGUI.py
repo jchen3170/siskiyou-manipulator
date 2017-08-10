@@ -8,10 +8,76 @@ import Image
 import ImageTk
 import numpy as np
 
-SP = 500 # max velocity value
+SP = 1000 # max velocity value (try not to go above 4000)
 AC = 25 # acceleration rate
 
 class Window:
+    # preset program that can be run using the "PROGRAM" button in the GUI
+    def setProgram(self):
+        program = [
+
+        lambda:com.moveRelative(sisk.Y, self.ser, com.mm2encoder(5), SP, AC),
+        lambda:com.moveRelative(sisk.X, self.ser, com.mm2encoder(5), SP, AC),
+        lambda:com.moveRelative(sisk.Y, self.ser, com.mm2encoder(-5), SP, AC),
+        lambda:com.moveRelative(sisk.X, self.ser, com.mm2encoder(-5), SP, AC)
+        
+        ]
+        # save program
+        self.program = program
+
+    # manually update GUI
+    def update(self):
+        # udpate text/display variables
+        self.pos_var.set(str(self.pos))
+        self.move_var.set(str(self.moving))
+        self.lims_var.set(str(self.lims))
+        self.stat_var.set(str(self.raw_status))
+        self.image_label.configure(image=self.image)
+        # update GUI display
+        self.root.update()
+        # shutdown GUI if close button was hit
+        if self.stop_flag:
+            return True
+        # handle all preset movements (calibration/program move)
+        else:
+            if (self.reset_flag1 or self.reset_flag2 or self.prog_flag1
+                or self.prog_flag2):
+                complete = com.isPathComplete(self.ser)
+                # check if in calibration mode
+                if self.reset_flag1:
+                    if complete:
+                        self.reset_p1()
+                        self.reset_flag1 = False
+                        self.reset_flag2 = True
+                elif self.reset_flag2:
+                    if complete:
+                        self.reset_p2()
+                        self.reset_flag2 = False
+                # check if in preset program mode
+                elif self.prog_flag1:
+                    if complete:
+                        self.prog_flag1 = False
+                        self.prog_flag2 = True
+                        if self.index == len(self.program):
+                            self.prog_flag1 = False
+                            self.prog_flag2 = False
+                            self.index = 0
+                        else:
+                            self.nextProgram()
+                            self.index += 1
+                elif self.prog_flag2:
+                    if complete:
+                        self.prog_flag1 = True
+                        self.prog_flag2 = False
+                        if self.index == len(self.program):
+                            self.prog_flag1 = False
+                            self.prog_flag2 = False
+                            self.index = 0
+                        else:
+                            self.nextProgram()
+                            self.index += 1
+            return False
+
     # initialize GUI components on class creation
     def __init__(self, ser):
         # specify window size
@@ -21,9 +87,8 @@ class Window:
         root.geometry("{}x{}".format(1300,700))
 
         font = ("TkDefaultFont",12)
-        font2 = ("TkDefaultFont",14)
+        font2 = ("TkDefaultFont",12)
         font3 = ("tkDefaultFont", 7)
-        pad_y = 5
 
         # high level parent frames
         root_left = tk.Frame(root, width=524)
@@ -75,6 +140,7 @@ class Window:
         image_frame_buttons.pack(pady=10)
         image_frame_buttons2.pack(pady=10)
 
+        # subframes for the subframes
         spacing_y = 5
         frame_text = tk.Frame(container_values)
         frame_value = tk.Frame(container_values)
@@ -85,6 +151,9 @@ class Window:
         frame_entry_x = tk.Frame(container_fix_move)
         frame_entry_y = tk.Frame(container_fix_move)
         frame_entry_z = tk.Frame(container_fix_move)
+        entry_units_x = tk.Frame(container_fix_move, width=25)
+        entry_units_y = tk.Frame(container_fix_move, width=25)
+        entry_units_z = tk.Frame(container_fix_move, width=25)
         frame_text.pack(side="left",fill="y",pady=(0,spacing_y))
         frame_value.pack(side="left",fill="y",pady=(0,spacing_y))
         frame_buttons_top.pack(anchor="w", pady=spacing_y)
@@ -92,9 +161,12 @@ class Window:
         frame_buttons_mid2.pack(side="bottom", anchor="w", pady=spacing_y)
         container_move.pack(anchor="w")
         frame_buttons_bot.pack(anchor="w", pady=spacing_y)
-        frame_entry_x.pack(side="left", padx=25)
-        frame_entry_y.pack(side="left", padx=25)
-        frame_entry_z.pack(side="left", padx=25)
+        frame_entry_x.pack(side="left")
+        entry_units_x.pack(side="left", fill='y')
+        frame_entry_y.pack(side="left", fill='y')
+        entry_units_y.pack(side="left", fill='y')
+        frame_entry_z.pack(side="left", fill='y')
+        entry_units_z.pack(side="left", fill='y')
 
         # text labels for the status frame
         text = tk.Label(frame_text, text= "", font=font)
@@ -102,13 +174,11 @@ class Window:
         text2 = tk.Label(frame_text, text="Moving: ", font=font)
         text3 = tk.Label(frame_text, text="Limits: ", font=font)
         text4 = tk.Label(frame_text, text="Status: ", font=font)
-        text5 = tk.Label(frame_text, text="Velocity: ", font=font)
-        text.pack(anchor="w", pady=pad_y)
-        text1.pack(anchor="w", pady=pad_y)
-        text2.pack(anchor="w", pady=pad_y)
-        text3.pack(anchor="w", pady=pad_y)
-        text4.pack(anchor="w", pady=pad_y)
-        text5.pack(anchor="w", pady=pad_y)
+        text.pack(anchor="w", pady=5)
+        text1.pack(anchor="w", pady=5)
+        text2.pack(anchor="w", pady=5)
+        text3.pack(anchor="w", pady=5)
+        text4.pack(anchor="w", pady=5)
 
         # changing variables that show current status
         self.pos_var = tk.StringVar()
@@ -134,13 +204,11 @@ class Window:
         limits = tk.Label(frame_value, textvariable=self.lims_var, font=font)
         status = tk.Label(frame_value, textvariable=self.stat_var, 
             font=("TkDefaultFont",9))
-        velocity = tk.Label(frame_value, textvariable=self.vel_var, font=font)
-        xyz.pack(anchor="w", pady=pad_y)
-        position.pack(anchor="w", pady=pad_y)
-        moving.pack(anchor="w", pady=pad_y)
-        limits.pack(anchor="w", pady=pad_y)
-        status.pack(anchor="w", pady=pad_y)
-        velocity.pack(anchor="w", pady=pad_y)
+        xyz.pack(anchor="w", pady=5)
+        position.pack(anchor="w", pady=5)
+        moving.pack(anchor="w", pady=5)
+        limits.pack(anchor="w", pady=5)
+        status.pack(anchor="w", pady=5)
 
         # buttons to trigger the zero commands
         pad_x_button = 15
@@ -199,43 +267,66 @@ class Window:
         stop_all.pack(side="left", padx=pad_x_button)
 
         # buttons for advanced controls
+        prog = tk.Button(container_adv, text="PROGRAM", font=font3, 
+            command=self.programMove, takefocus=False)
         calib = tk.Button(container_adv, text="CALIBRATE", font=font3,
-            command=self.default, takefocus=False,)
+            command=self.calibrate, takefocus=False)
         flush = tk.Button(container_adv, text="FLUSH", font=font3,
-            command=self.flush, takefocus=False,)
+            command=self.flush, takefocus=False)
         power_cycle = tk.Button(container_adv, text="POWER CYCLE", font=font3,
-            command=self.pcycle, takefocus=False,)
-        calib.pack(side="left")
-        flush.pack(side="left", padx=100)
+            command=self.pcycle, takefocus=False)
+        prog.pack(side="left")
+        calib.pack(side="left", padx=(25,25))
+        flush.pack(side="left", padx=(25,25))
         power_cycle.pack(side="left")
 
         # buttons/entries for fixed distance movement
         vcmd = (root.register(self.entryValid),
                 '%d', '%i', '%P', '%s', '%S')
-        entry_x_val = tk.StringVar()
-        entry_y_val = tk.StringVar()
-        entry_z_val = tk.StringVar()
-        entry_x = tk.Entry(frame_entry_x, textvariable=entry_x_val, width=8,
+        entry_x = tk.StringVar()
+        entry_y = tk.StringVar()
+        entry_z = tk.StringVar()
+        entry_x = tk.Entry(frame_entry_x, textvariable=entry_x, width=12,
             font=font, validate='key', vcmd=vcmd, bd=2, relief="ridge")
-        entry_y = tk.Entry(frame_entry_y, textvariable=entry_y_val, width=8,
+        entry_y = tk.Entry(frame_entry_y, textvariable=entry_y, width=12,
             font=font, validate='key', vcmd=vcmd, bd=2, relief="ridge")
-        entry_z = tk.Entry(frame_entry_z, textvariable=entry_z_val, width=8,
+        entry_z = tk.Entry(frame_entry_z, textvariable=entry_z, width=12,
             font=font, validate='key', vcmd=vcmd, bd=2, relief="ridge")
         entry_x.pack()
         entry_y.pack()
         entry_z.pack()
-        self.entry_x_val = entry_x_val
-        self.entry_y_val = entry_y_val
-        self.entry_z_val = entry_z_val
+        self.entry_x = entry_x
+        self.entry_y = entry_y
+        self.entry_z = entry_z
         entry_x_button = tk.Button(frame_entry_x, text="Move X",takefocus=False,
-            command = lambda: self.fixedMove(sisk.X,self.entry_x_val))
+            command = lambda: self.fixedMove(sisk.X,self.entry_x))
         entry_y_button = tk.Button(frame_entry_y, text="Move Y",takefocus=False,
-            command = lambda: self.fixedMove(sisk.Y,self.entry_y_val))
+            command = lambda: self.fixedMove(sisk.Y,self.entry_y))
         entry_z_button = tk.Button(frame_entry_z, text="Move Z",takefocus=False,
-            command = lambda: self.fixedMove(sisk.Z,self.entry_z_val))
-        entry_x_button.pack(pady=(10,0))
-        entry_y_button.pack(pady=(10,0))
-        entry_z_button.pack(pady=(10,0))
+            command = lambda: self.fixedMove(sisk.Z,self.entry_z))
+        entry_x_button.pack(pady=(8,0))
+        entry_y_button.pack(pady=(8,0))
+        entry_z_button.pack(pady=(8,0))
+
+        xyz_units = tk.StringVar()
+        xyz_units.set('cts')
+        self.xyz_units = xyz_units
+        x_mm_cts = tk.Label(entry_units_x, textvariable=xyz_units, font=font3)
+        y_mm_cts = tk.Label(entry_units_y, textvariable=xyz_units, font=font3)
+        z_mm_cts = tk.Label(entry_units_z, textvariable=xyz_units, font=font3)
+        x_mm_cts.pack(side="top", pady=6)
+        y_mm_cts.pack(side="top", pady=6)
+        z_mm_cts.pack(side="top", pady=6)
+
+        self.unit_flag = False
+        self.unit_label_var = tk.StringVar()
+        self.unit_label_var.set("units: " + xyz_units.get())
+        unit_swap_button = tk.Button(root_left_sub1, text="Change Units",
+            command=self.unitSwap)
+        unit_swap_button.pack(pady=(0,2))
+        unit_label = tk.Label(root_left_sub1, textvariable=self.unit_label_var,
+            font=('TkDefaultFont',9))
+        unit_label.pack(pady=(0,5))
 
         # image display and buttons
         img = Image.fromarray(np.ones([500,800]))
@@ -266,8 +357,11 @@ class Window:
             takefocus=False)
         close_button.pack()
 
-        # disable automatic resizing of left high level frame
+        # disable automatic resizing of some frames
         root_left.pack_propagate(0)
+        entry_units_x.pack_propagate(0)
+        entry_units_y.pack_propagate(0)
+        entry_units_z.pack_propagate(0)
 
         # assign important variables to class level
         self.root = root
@@ -280,32 +374,10 @@ class Window:
         self.move_flag = False
         self.edge_flag = False
         self.contour_flag = False
-
-    # manually update GUI
-    def update(self):
-        # udpate text/display variables
-        self.pos_var.set(str(self.pos))
-        self.move_var.set(str(self.moving))
-        self.lims_var.set(str(self.lims))
-        self.stat_var.set(str(self.raw_status))
-        self.vel_var.set(str(self.vel))
-        self.image_label.configure(image=self.image)
-        # update GUI display
-        self.root.update()
-        # handle the stages of the reset/calibration function
-        if self.stop_flag:
-            return True
-        else:
-            if self.reset_flag1:
-                if com.isPathComplete(self.ser):
-                    self.reset_p1()
-                    self.reset_flag1 = False
-                    self.reset_flag2 = True
-            elif self.reset_flag2:
-                if com.isPathComplete(self.ser):
-                    self.reset_p2()
-                    self.reset_flag2 = False
-            return False
+        self.prog_flag1 = False
+        self.prog_flag2 = False
+        self.index = 0
+        self.setProgram()
 
     # zero the specified axis
     def zero(self, axis):
@@ -319,7 +391,8 @@ class Window:
 
     # move specified axis in the specified direction
     def move(self, axis, dir):
-        if not self.reset_flag1 or self.reset_flag2:
+        if not (self.reset_flag1 or self.reset_flag2 or self.prog_flag1 or 
+            self.prog_flag2):
             if dir:
                 com.velocityMode(axis, self.ser, SP, AC)
                 self.setVelocity(axis, SP)
@@ -327,7 +400,7 @@ class Window:
                 com.velocityMode(axis, self.ser, -SP, AC)
                 self.setVelocity(axis, -SP)
         else:
-            print "Currently in reset mode"
+            print "Currently busy"
 
     # stop specified axis
     def stopMove(self, axis):
@@ -336,6 +409,9 @@ class Window:
         self.reset_flag1 = False
         self.reset_flag2 = False
         self.move_flag = False
+        self.prog_flag1 = False
+        self.prog_flag2 = False
+        self.index = 0
 
     # stop all axis
     def stopAll(self):
@@ -350,9 +426,11 @@ class Window:
         com.returnHome(sisk.Z, self.ser, SP, AC)
 
     # initiate reset/calibration
-    def default(self):
+    def calibrate(self):
         com.zeroAll(self.ser, SP, AC)
         self.reset_flag1 = True
+        self.prog_flag1 = False
+        self.prog_flag2 = False
 
     # flush controller output to try to fix communication problems
     def flush(self):
@@ -363,10 +441,35 @@ class Window:
         com.resetAxis(sisk.X, self.ser)
         com.resetAxis(sisk.Y, self.ser)
         com.resetAxis(sisk.Z, self.ser)
+        self.reset_flag1 = False
+        self.reset_flag2 = False
+        self.move_flag = False
+        self.prog_flag1 = False
+        self.prog_flag2 = False
+        self.index = 0
 
     # update internal position variable
     def setPosition(self, pos):
-        self.pos = pos
+        if self.unit_flag:
+            sigfig = 8
+            x = ''
+            y = ''
+            z = ''
+            if pos[0]:
+                x = "%.8f" % round(com.encoder2mm(pos[0]),sigfig)
+            elif pos[0] == 0:
+                x = "%.8f" % float(0.00000000)
+            if pos[1]:
+                y = "%.8f" % round(com.encoder2mm(pos[1]),sigfig)
+            elif pos[1] == 0:
+                y = "%.8f" % float(0.00000000)
+            if pos[2]:
+                z = "%.8f" % round(com.encoder2mm(pos[2]),sigfig)
+            elif pos[2] == 0:
+                z = "%.8f" % float(0.00000000)
+            self.pos = (x,y,z)
+        else: 
+            self.pos = pos
 
     # update internal moving variable
     def setMoving(self, move):
@@ -389,6 +492,9 @@ class Window:
         self.stop_flag = True
         self.reset_flag1 = False
         self.reset_flag2 = False
+        self.prog_flag1 = False
+        self.prog_flag2 = False
+        self.index = 0
 
     # part 1 of calibration: move to set position after hitting limits
     def reset_p1(self):
@@ -456,6 +562,11 @@ class Window:
     # begin movement towards first image point
     def setMoveFlag(self, flag):
         self.move_flag = flag
+        self.reset_flag1 = False
+        self.reset_flag2 = False
+        self.prog_flag1 = False
+        self.prog_flag2 = False
+        self.index = 0
 
     # change status of movement towards image point
     def getMoveFlag(self):
@@ -466,29 +577,49 @@ class Window:
         # always allow deletes
         if d == '0':
             return True
-        # make sure number value never exceeds 7 digits
-        if len(P.replace('-','')) > 7:
-            return False
-        # allow for insertion of neg. sign at beginning
-        if i == '0':
-            # make sure there is ever only one neg. sign
-            if s:
-                return (text.isdigit() or text == '-') and ('-' not in s)
-            else:
-                return text.isdigit() or text == '-'
+        # make sure number value never exceeds 7 digits for cts
+        if self.unit_flag:
+            if len(P.replace('-','').replace('.','')) > 9:
+                return False
         else:
-            return text.isdigit()
+            if len(P.replace('-','')) > 7:
+                return False
+        # check entered key
+        if i == '0':
+            # make sure there is only ever one neg. sign and period
+            if s:
+                if text == '-':
+                    return ('-' not in s)
+                elif text == '.':
+                    return self.unit_flag and ('.' not in s) and ('-' not in s)
+                else:
+                    return text.isdigit()
+            # allow for insertion of neg sign / period at beginning
+            else:
+                if self.unit_flag:
+                    return text.isdigit() or text == '-' or text == '.'
+                else:
+                    return text.isdigit() or text == '-'
+        else:
+            # make sure there is only ever one period
+            if text == '.':
+                if self.unit_flag:
+                    return ('.' not in s)
+                else:
+                    return False
+            # make sure value is a digit
+            else:
+                return text.isdigit()
 
     # moves axis a fixed distance
     def fixedMove(self, axis, val):
         amt = val.get()
         # confirm that textbox entry is actually an integer
         try:
-            int(amt)
-            # reverse direction if Z axis
-            if axis is sisk.Z:
-                amt = "-" + amt
-            print amt
+            if not self.unit_flag:
+                int(amt)
+            else:
+                amt = com.mm2encoder(amt)
             com.moveRelative(axis, self.ser, amt, SP, AC)
             return True
         except ValueError:
@@ -509,6 +640,28 @@ class Window:
     # returns current flag state
     def getContourFlag(self):
         return self.contour_flag
+
+    # swaps the unit listing and appropriate flags
+    def unitSwap(self):
+        if self.unit_flag:
+            self.xyz_units.set('cts')
+        else:
+            self.xyz_units.set('mm')
+        self.unit_flag = not self.unit_flag
+        self.unit_label_var.set("units: " + self.xyz_units.get())
+
+    # begin program move
+    def programMove(self):
+        # make sure there are commands in the program list
+        if self.program:
+            self.prog_flag1 = True
+            self.nextProgram()
+            self.index += 1
+
+    # call next program in program list
+    def nextProgram(self):
+        f = self.program[self.index]
+        f()
 
 # test code for when executing the class directly
 if __name__ == "__main__":

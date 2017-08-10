@@ -35,7 +35,7 @@ def main():
     else:
         PORT = "/dev/" + PORT
 
-    # camera publish topic name
+    # camera publish ROS topic name
     CAMERA_TOPIC = "/camera/image_raw"
 
     # global scope variables 
@@ -155,9 +155,9 @@ def movePipette(gui):
     for pt in pt_stack:
         cv2.circle(image, pt, 2, (0,200,0), -1)
     if pt_stack:
-        cv2.line(image, global_corner, pt_stack[0], (200,100,0))
+        # cv2.line(image, global_corner, pt_stack[0], (200,100,0))
         if gui.getMoveFlag():
-            # scale velocity values based on distance
+            # scale velocity values based on distance (not yet implemented)
             print (pt_stack[0][0]-global_corner[0], 
                 pt_stack[0][1]-global_corner[1])
     else:

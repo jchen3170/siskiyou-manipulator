@@ -7,6 +7,8 @@ import siskiyouSerial
 import siskiyouLibrary as sisk
 import siskiyouControls as controls
 
+counts_per_mm = 198472 # actual conversion ratio specified by manufacturer
+
 # Sets home for selected axis for manipulator.
 # inputs: 
 #     axis: target axis 
@@ -50,7 +52,7 @@ def returnHome(axis, ser, sp, ac):
 # inputs: 
 #     axis: target axis
 #     ser: siskyouSerial object
-#     amt: amount to move
+#     amt: amount to move (in encoder counts)
 #     sp: max velocity
 #     ac: acceleration rate
 def moveAbsolute(axis, ser, amt, sp, ac):
@@ -67,7 +69,7 @@ def moveAbsolute(axis, ser, amt, sp, ac):
 # inputs: 
 #     axis: target axis
 #     ser: siskyouSerial object
-#     amt: amount to move
+#     amt: amount to move (in encoder counts)
 #     sp: max velocity
 #     ac: acceleration rate
 def moveRelative(axis, ser, amt, sp, ac):
@@ -225,8 +227,9 @@ def isPathComplete(ser):
     inpos = (isInPosition(s[2][0]),
              isInPosition(s[2][1]),
              isInPosition(s[2][2]))
-    if '' not in s:
+    if ('' not in moving) and ('' not in inpos):
         if (True not in moving) and (False not in inpos):
+            # print "path complete", moving, inpos
             return True
     return False
 
@@ -250,7 +253,16 @@ def hex2int(st):
         val -= 0x100000000
     return val
 
-# converts encoder counts to inches
+# converts encoder counts to mm
 def encoder2mm(val):
-    counts_per_mm = 198472
-    return val*counts_per_mm
+    if val:
+        return (float(val)/float(counts_per_mm))
+    else:
+        return val
+
+# converts mm to encoder counts
+def mm2encoder(val):
+    if val:
+        return int((float(val)*float(counts_per_mm)))
+    else:
+        return val

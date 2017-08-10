@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+import siskiyouMain
+
+if __name__ == "__main__":
+    siskiyouMain.main()

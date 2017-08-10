@@ -1,3 +1,7 @@
+NOTE: Tested to be working on: 
+    Ubuntu-16.04 with ros-kinetic 
+    Ubuntu-14.04 with ros-indigo
+
 INSTALLING/SETUP:
 
 Required additional ROS packages (assuming you already have OpenCV):
@@ -9,7 +13,7 @@ Required Python Modules:
 
     sudo apt-get install python-imaging-tk
 
-Download PointGrey Camera Drivers (Model FireFlyMV FMVU-03MTC):
+Download/install PointGrey Camera Drivers (Model FireFlyMV FMVU-03MTC):
     
     Included drivers (from https://www.ptgrey.com/support/downloads):
         Ubuntu-16.04: flycapture2-2.11.3.121-amd64-pkg
@@ -18,21 +22,39 @@ Download PointGrey Camera Drivers (Model FireFlyMV FMVU-03MTC):
     Download, extract, and install with instructions from the README.txt
     Restart computer
 
-For port address (/dev/ttyUSB#) after plugging in controller:
-
-    dmesg | grep pl2303
+Setup ROS workspace (wiki.ros.org/catkin/Tutorials/create_a_workspace)
 
 
 USAGE:
 
 To start:
     roscore (if roscore not already running)
-    source the workspace (source <address to workspace>/devel/setup.bash)
+    source the workspace ("source <address to workspace>/devel/setup.bash")
+        (test by calling "roscd siskiyou")
     roslaunch siskiyou siskiyou.launch
+        OR (if you don't need the camera)
+    rosrun siskiyou siskiyouMain.py
+
 Adjustments:
-    siskiyouMain.py: change PORT to match your port address
+    siskiyouMain.py: change PORT to match your port address if autofinding port
+        is not working
+
     siskiyouVision.py: change the HSV min/max to adjust filter results
-    siskiyouGUI.py: change SP/AC to adjust default max speed/acceleration values
+
+    siskiyouCommands.py: counts_per_mm is the actual conversion ratio of 
+        encoder counts per mm specified by the manufacturer
+
+    siskiyouGUI.py: 
+        Change SP/AC to adjust default max speed/acceleration values.
+        Add/remove commands from the program array for preset programs. The 
+            commands should follow the format:
+
+            "lambda:com.<function>(<inputs>)"
+            
+            All functions used should come from siskiyouCommands (descriptions
+            are listed for each function). The current set program moves the
+            end effector in a 5mm x 5mm square trajectory
+
 
 GUI:
 
@@ -41,7 +63,7 @@ Values:
     Moving: indicates if axes are moving
     Limits: indicates if axes have hit their mechanical hardstop
     Status: raw 16-bit status. Look in MVP2001 manual for more information
-    Velocity: current set velocity
+    Change Units: swap between encoder counts and mm for input/output
 
 Basic Controls:
     Zero: zero selected axis
@@ -50,9 +72,11 @@ Basic Controls:
     Stop: stop axis
 
 Fixed Move:
-    Enter distance in encoder counts and hit "move" (max range is ~4000000)
+    Enter distance in encoder counts or mm and hit "move" 
+    Max range is ~4000000 cts or 20mm
 
 Advanced:
+    Program: run preset program specified in siskiyouGUI
     Calibrate: preset cycle that centers every axis at their midpoint
     Flush: flushes output from controller for 1 sec.
     Power Cycle: software reset. (Use when motors get stuck on intialization)
