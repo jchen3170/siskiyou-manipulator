@@ -21,12 +21,14 @@ import siskiyouGetPort
 
 # main function 
 def main():
-    global PORT
-    global CAMERA_TOPIC
-    global image
-    global global_corner
-    global bridge
-    global ser
+    global PORT, CAMERA_TOPIC
+    global image, global_corner, pt_stack
+    global bridge, ser
+    global pos_control, vel_control
+
+    # (NOT TUNED) control method (set one to "True")
+    pos_control = False
+    vel_control = True
 
     # assigned USB port address for device (change accordingly)
     PORT = siskiyouGetPort.getPort()
@@ -41,6 +43,7 @@ def main():
     # global scope variables 
     image = np.zeros((480,760,3), np.uint8)
     global_corner = (0,0)
+    pt_stack = []
 
     # intialize opencv image converter
     bridge = CvBridge()
@@ -62,7 +65,7 @@ def main():
 
 # main loop that updates GUI and sends commands
 def main_loop(ser, gui):
-    global image
+    global image, pt_stack
 
     pos = (0,0,0)
     mov = (False,False,False)
@@ -79,6 +82,7 @@ def main_loop(ser, gui):
         gui.setMoving(mov)
         gui.setLimits(lims)
         gui.setStatus(status)
+        pt_stack = gui.getImagePoints()
         movePipette(gui)
         gui.setImage(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         # update GUI visuals
@@ -93,9 +97,7 @@ def main_loop(ser, gui):
 
 # callback function for rospy subscriber: analyzes the camera feed
 def callback(data, gui):
-    global image
-    global global_corner
-    global bridge
+    global image, global_corner, bridge, pt_stack
 
     # convert from ROS image format to CV2 image format
     frame = bridge.imgmsg_to_cv2(data, "bgr8")
@@ -132,6 +134,11 @@ def callback(data, gui):
         cv2.circle(overlay_contour, corner, 2, (255,255,255), -1)
         cv2.circle(overlay_both, corner, 2, (255,255,255), -1)
         global_corner = corner
+    else:
+        cv2.circle(frame, global_corner, 2, (255,255,255), -1)
+        cv2.circle(overlay_edges, global_corner, 2, (255,255,255), -1)
+        cv2.circle(overlay_contour, global_corner, 2, (255,255,255), -1)
+        cv2.circle(overlay_both, global_corner, 2, (255,255,255), -1)
 
     # use GUI flags to determine which visuals to show
     edge_flag = gui.getEdgeFlag()
@@ -146,20 +153,34 @@ def callback(data, gui):
     else:
         image = frame
 
-# function to move pipette tip to selected points
-def movePipette(gui):
-    global image
-    global global_corner
-
-    pt_stack = gui.getImagePoints()
+    # draw selected points
     for pt in pt_stack:
         cv2.circle(image, pt, 2, (0,200,0), -1)
+
+# function to move pipette tip to selected points
+def movePipette(gui):
+    global image, global_corner, ser, pt_stack, pos_control, vel_control
+
     if pt_stack:
         # cv2.line(image, global_corner, pt_stack[0], (200,100,0))
         if gui.getMoveFlag():
             # scale velocity values based on distance (not yet implemented)
-            print (pt_stack[0][0]-global_corner[0], 
-                pt_stack[0][1]-global_corner[1])
+            x_diff = pt_stack[0][0]-global_corner[0]
+            y_diff = pt_stack[0][1]-global_corner[1]
+
+            if pos_control:
+                counts_per_pixel = 1
+                x_amt = counts_per_pixel * x_diff
+                y_amt = counts_per_pixel * y_diff
+                com.moveRelative(sisk.X, ser, x_amt, gui.SP, gui.AC)
+                com.moveRelative(sisk.Y, ser, y_amt, gui.SP, gui.AC)
+            elif vel_control:
+                k = 1
+                x_vel = k * x_diff
+                y_vel = k * y_diff
+                com.velocityMode(sisk.X, ser, x_vel, gui.AC)
+                com.velocityMode(sisk.Y, ser, y_vel, gui.AC)
+            
     else:
         if gui.getMoveFlag():
             gui.setMoveFlag(False)

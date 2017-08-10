@@ -4,7 +4,15 @@ NOTE: Tested to be working on:
 
 INSTALLING/SETUP:
 
-Required additional ROS packages (assuming you already have OpenCV):
+Setup/Install ROS: 
+
+    www.ros.org/wiki/catkin or http://wiki.ros.org/ROS/Installation
+
+Setup ROS workspace: 
+
+    wiki.ros.org/catkin/Tutorials/create_a_workspace
+
+Required additional ROS packages (assuming OpenCV already installed):
 
     sudo apt-get install ros-$ROS_DISTRO-pointgrey-camera-driver
     sudo apt-get install ros-$ROS_DISTRO-cv-bridge
@@ -22,13 +30,11 @@ Download/install PointGrey Camera Drivers (Model FireFlyMV FMVU-03MTC):
     Download, extract, and install with instructions from the README.txt
     Restart computer
 
-Setup ROS workspace (wiki.ros.org/catkin/Tutorials/create_a_workspace)
-
 
 USAGE:
 
 To start:
-    roscore (if roscore not already running)
+    roscore
     source the workspace ("source <address to workspace>/devel/setup.bash")
         (test by calling "roscd siskiyou")
     roslaunch siskiyou siskiyou.launch
@@ -36,8 +42,11 @@ To start:
     rosrun siskiyou siskiyouMain.py
 
 Adjustments:
-    siskiyouMain.py: change PORT to match your port address if autofinding port
-        is not working
+    siskiyouMain.py: 
+        Change PORT to match USB port address if autofinding port is not working
+        Set either pos_control or vel_control to True to allow enable video feed
+            based control after hitting "move" under the image (needs tuning)
+            (currently only for XY movement, both off by default)
 
     siskiyouVision.py: change the HSV min/max to adjust filter results
 
@@ -82,7 +91,8 @@ Advanced:
     Power Cycle: software reset. (Use when motors get stuck on intialization)
 
 Image:
-    Display: click image to add points
+    Display: click image to add points (green ponits are selected points, 
+        white point is the corner approximation)
     Move: move from current location to first selected point
     Undo: remove last added point
     Reset: remove all points

@@ -5,7 +5,6 @@ Command library to control and communicate with the manipulator
 '''
 import siskiyouSerial
 import siskiyouLibrary as sisk
-import siskiyouControls as controls
 
 counts_per_mm = 198472 # actual conversion ratio specified by manufacturer
 
@@ -233,12 +232,11 @@ def isPathComplete(ser):
             return True
     return False
 
-# initializes PID gain values
-def init_controls(ser, P, I, D):
-    P = 8000 # must be between 4000 - 32000
-    I = 250 # must be between 1 - 32000
-    D = 1000 # must be between 1000 - 32000
-    controls.setGains(axis.ALL, P, I, D, ser)
+# # initializes PID gain values
+# def init_controls(ser, P, I, D):
+#     P = 8000 # must be between 4000 - 32000
+#     I = 250 # must be between 1 - 32000
+#     D = 1000 # must be between 1000 - 32000
 
 # convert hex string to binary
 def hex2bin(st):

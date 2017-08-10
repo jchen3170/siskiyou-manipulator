@@ -14,6 +14,7 @@ AC = 25 # acceleration rate
 class Window:
     # preset program that can be run using the "PROGRAM" button in the GUI
     def setProgram(self):
+        # current program moves end effector in a 5x5mm square trajectory
         program = [
 
         lambda:com.moveRelative(sisk.Y, self.ser, com.mm2encoder(5), SP, AC),
@@ -321,9 +322,9 @@ class Window:
         self.unit_flag = False
         self.unit_label_var = tk.StringVar()
         self.unit_label_var.set("units: " + xyz_units.get())
-        unit_swap_button = tk.Button(root_left_sub1, text="Change Units",
-            command=self.unitSwap)
-        unit_swap_button.pack(pady=(0,2))
+        change_units_button = tk.Button(root_left_sub1, text="Change Units",
+            command=self.unitSwap, takefocus=False)
+        change_units_button.pack(pady=(0,2))
         unit_label = tk.Label(root_left_sub1, textvariable=self.unit_label_var,
             font=('TkDefaultFont',9))
         unit_label.pack(pady=(0,5))
@@ -377,6 +378,8 @@ class Window:
         self.prog_flag1 = False
         self.prog_flag2 = False
         self.index = 0
+        self.SP = SP
+        self.AC = AC
         self.setProgram()
 
     # zero the specified axis
