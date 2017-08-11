@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+'''
+GUI class for manipulator. 
+
+'''
+
 import Tkinter as tk
 import siskiyouCommands as com
 import siskiyouLibrary as sisk

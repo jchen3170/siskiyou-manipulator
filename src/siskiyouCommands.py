@@ -2,7 +2,9 @@
 
 '''
 Command library to control and communicate with the manipulator
+
 '''
+
 import siskiyouSerial
 import siskiyouLibrary as sisk
 

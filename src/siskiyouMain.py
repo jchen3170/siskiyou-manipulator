@@ -5,6 +5,7 @@ Main script for interfacing/communicating with the Siskiyou Design
 Micromanipulator (Series MX7000). (Assumes R232->USB)
 
 '''
+
 import time
 import rospy
 import cv2

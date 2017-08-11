@@ -3,6 +3,7 @@
 '''
 Wrapper class for pyserial with additional functionality added.
 Interfaces with and deals with all serial related code
+
 '''
 
 import time
@@ -21,11 +22,15 @@ class SiskiyouSerial():
         print (self.ser)
 
     # read from port
+    #  if called without an input, it will just read until an endline is found
+    #  if called with an an input it will stop after reading that many bits
     def read(self, bits=None):
         if bits is None:
             s = self.ser.read(1024)
+            # regular expression to read until an endline is found
             if s != '':
                 st = re.search(r"\\r\\n.*\\r\\n", repr(s))
+                # cleanup expression if a match is found
                 if st:
                     return st.group().replace("\\r\\n", '')
             return s

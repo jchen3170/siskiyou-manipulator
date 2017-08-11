@@ -11,6 +11,11 @@ Setup/Install ROS:
 Setup ROS workspace: 
 
     wiki.ros.org/catkin/Tutorials/create_a_workspace
+        create new directory under home: mkdir catkin_ws
+        create a src folder under that directory: mkdir catkin_ws/src
+        change directories: cd catkin_ws
+        intialize workspace: catkin_make
+        source workspace: source devel/setup.bash
 
 Required additional ROS packages (assuming OpenCV already installed):
 
@@ -27,7 +32,7 @@ Download/install PointGrey Camera Drivers (Model FireFlyMV FMVU-03MTC):
         Ubuntu-16.04: flycapture2-2.11.3.121-amd64-pkg
         Ubuntu-14.04: flycapture2-2.9.3.43-amd64-pkg
 
-    Download, extract, and install with instructions from the README.txt
+    Download, extract, and install with instructions from the README.txt inside
     Restart computer
 
 
@@ -35,8 +40,8 @@ USAGE:
 
 To start:
     roscore
-    source the workspace ("source <address to workspace>/devel/setup.bash")
-        (test by calling "roscd siskiyou")
+    source the workspace: source <address to workspace>/devel/setup.bash
+        (test by calling: roscd siskiyou)
     roslaunch siskiyou siskiyou.launch
         OR (if you don't need the camera)
     rosrun siskiyou siskiyouMain.py

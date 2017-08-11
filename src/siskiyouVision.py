@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+'''
+Vision library to filter and edit images fed in by the camera
+
+'''
+
 import rospy
 from cv_bridge import CvBridge, CvBridgeError
 import cv2

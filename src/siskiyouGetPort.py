@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+'''
+Uses regular expression to search for the RS232 -> USB converter and output
+the port address
+
+'''
+
 import re
 import subprocess
 
