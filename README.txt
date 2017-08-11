@@ -35,6 +35,8 @@ Download/install PointGrey Camera Drivers (Model FireFlyMV FMVU-03MTC):
     Download, extract, and install with instructions from the README.txt inside
     Restart computer
 
+Place entire siskiyou folder under <address to workspace>/src/
+
 
 USAGE:
 
@@ -66,14 +68,22 @@ Adjustments:
             "lambda:com.<function>(<inputs>)"
             
             All functions used should come from siskiyouCommands (descriptions
-            are listed for each function). The current set program moves the
-            end effector in a 5mm x 5mm square trajectory
+            are listed for each function). 
+            The current set program moves the end effector in a 5mm x 5mm 
+            square trajectory
+
+            To run multiple commands simultaneously, group them in another list.
+            For example:
+                program = [ command1, [command2a , command2b], command3]
+            would run command1 first until complete, then command2a/command2b
+            together until both are complete, and then command3
 
 
 GUI:
 
 Values:
     Position: X, Y, Z positions in encoder counts
+        (Note: Positive Z direction is downwards)
     Moving: indicates if axes are moving
     Limits: indicates if axes have hit their mechanical hardstop
     Status: raw 16-bit status. Look in MVP2001 manual for more information

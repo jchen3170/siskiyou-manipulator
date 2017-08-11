@@ -26,7 +26,7 @@ class Window:
         lambda:com.moveRelative(sisk.X, self.ser, com.mm2encoder(5), SP, AC),
         lambda:com.moveRelative(sisk.Y, self.ser, com.mm2encoder(-5), SP, AC),
         lambda:com.moveRelative(sisk.X, self.ser, com.mm2encoder(-5), SP, AC)
-        
+
         ]
         # save program
         self.program = program
@@ -459,25 +459,36 @@ class Window:
     # update internal position variable
     def setPosition(self, pos):
         if self.unit_flag:
+            x = '----------------'
+            y = '----------------'
+            z = '----------------'
             sigfig = 8
-            x = ''
-            y = ''
-            z = ''
-            if pos[0]:
+            if pos[0] or pos[0] == 0:
                 x = "%.8f" % round(com.encoder2mm(pos[0]),sigfig)
-            elif pos[0] == 0:
-                x = "%.8f" % float(0.00000000)
-            if pos[1]:
+            if pos[1] or pos[1] == 0:
                 y = "%.8f" % round(com.encoder2mm(pos[1]),sigfig)
-            elif pos[1] == 0:
-                y = "%.8f" % float(0.00000000)
-            if pos[2]:
+            if pos[2] or pos[2] == 0:
                 z = "%.8f" % round(com.encoder2mm(pos[2]),sigfig)
-            elif pos[2] == 0:
-                z = "%.8f" % float(0.00000000)
-            self.pos = (x,y,z)
-        else: 
-            self.pos = pos
+        else:
+            x = '------------'
+            y = '------------'
+            z = '------------'
+            if pos[0] or pos[0] == 0:
+                if pos[0] < 0:
+                    x = str(format(pos[0], '08'))
+                else:
+                    x = str(format(pos[0], '07'))
+            if pos[1] or pos[1] == 0:
+                if pos[1] < 0:
+                    y = str(format(pos[1], '08'))
+                else:
+                    y = str(format(pos[1], '07'))
+            if pos[2] or pos[2] == 0:
+                if pos[2] < 0:
+                    z = str(format(pos[2], '08'))
+                else:
+                    z = str(format(pos[2], '07'))
+        self.pos = (x,y,z)
 
     # update internal moving variable
     def setMoving(self, move):
@@ -561,6 +572,7 @@ class Window:
     def resetImagePoints(self):
         del self.image_points[:]
         self.move_flag = False
+
 
     # remove the first image click point
     def removeFirstImagePoint(self):
@@ -669,7 +681,11 @@ class Window:
     # call next program in program list
     def nextProgram(self):
         f = self.program[self.index]
-        f()
+        try:
+            for i in f:
+                i()
+        except:
+            f()
 
 # test code for when executing the class directly
 if __name__ == "__main__":
