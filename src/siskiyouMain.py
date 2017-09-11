@@ -169,16 +169,19 @@ def movePipette(gui):
             x_diff = pt_stack[0][0]-global_corner[0]
             y_diff = pt_stack[0][1]-global_corner[1]
 
+            # determine if set to position or velocity control
             if pos_control:
+                # determine gains
                 counts_per_pixel = 1
                 x_amt = counts_per_pixel * x_diff
                 y_amt = counts_per_pixel * y_diff
                 com.moveRelative(sisk.X, ser, x_amt, gui.SP, gui.AC)
                 com.moveRelative(sisk.Y, ser, y_amt, gui.SP, gui.AC)
             elif vel_control:
+                # determine gains
                 k = 1
                 x_vel = k * x_diff
-                y_vel = k * y_diff
+                y_vel = -k * y_diff
                 com.velocityMode(sisk.X, ser, x_vel, gui.AC)
                 com.velocityMode(sisk.Y, ser, y_vel, gui.AC)
             
